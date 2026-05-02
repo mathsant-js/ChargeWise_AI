@@ -73,3 +73,7 @@ O uso do LangChain possibilita a **injeção de contexto estruturado**, garantin
 A escolha do Python se justifica pela sua ampla adoção em soluções de inteligência artificial e facilidade de integração com APIs e bibliotecas especializadas.
 
 A arquitetura proposta é modular, escalável e orientada à integração futura com sistemas reais de monitoramento energético, permitindo evolução para um ambiente de **gestão inteligente de infraestrutura de recarga (smart charging)**.
+
+Além disso, a solução proposta se alinha ao conceito de **orquestração energética inteligente**, permitindo uma gestão eficiente e equilibrada da infraestrutura de recarga em ambientes compartilhados.
+
+Essa abordagem possibilita a otimização do uso dos recursos energéticos disponíveis, reduzindo riscos de sobrecarga, melhorando a previsibilidade de consumo e garantindo uma experiência mais justa e transparente para todos os usuários do sistema.
