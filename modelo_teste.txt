@@ -12,3 +12,9 @@ Resposta esperada: Sim, desde que o usuário informe o consumo estimado ou a cap
 
 Pergunta: Quanto tempo demora para carregar um carro?
 Resposta esperada: Depende da potência do carregador e da capacidade da bateria.
+
+Pergunta: Como o sistema contribui para a eficiência energética do condomínio?
+Resposta esperada: Ao controlar o consumo, distribuir a potência e organizar o uso dos carregadores, o sistema melhora a eficiência energética e reduz desperdícios.
+
+Pergunta: Como o sistema organiza o uso dos carregadores entre os moradores?
+Resposta esperada: O sistema pode aplicar regras de uso e agendamento, garantindo uma distribuição justa e organizada entre os usuários.
