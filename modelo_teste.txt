@@ -1,0 +1,14 @@
+Pergunta: Como é calculado o valor da recarga do meu carro?
+Resposta esperada: O valor é calculado com base no consumo de energia em kWh multiplicado pela tarifa de energia elétrica do condomínio.
+
+Pergunta: O que acontece se a demanda de energia for muito alta no condomínio?
+Resposta esperada: O sistema pode gerenciar a distribuição de potência para evitar sobrecarga, reduzindo ou equilibrando o fornecimento entre os usuários.
+
+Pergunta: Como posso saber quanto já consumi de energia na recarga?
+Resposta esperada: O consumo pode ser monitorado pelo sistema, que registra a quantidade de energia utilizada em kWh por usuário.
+
+Pergunta: O chatbot pode ajudar a estimar o custo antes da recarga?
+Resposta esperada: Sim, desde que o usuário informe o consumo estimado ou a capacidade da bateria, o sistema pode calcular um valor aproximado.
+
+Pergunta: Quanto tempo demora para carregar um carro?
+Resposta esperada: Depende da potência do carregador e da capacidade da bateria.
