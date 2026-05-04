@@ -56,7 +56,8 @@ O chatbot será direcionado principalmente a síndicos e moradores, funcionando 
 ##  Tecnologias Selecionadas
 
 - Python → Desenvolvimento da lógica do sistema e backend  
-- OpenAI API (GPT) → Processamento de linguagem natural e geração de respostas  
+- Modelo Open-Source (Qwen) → Processamento de linguagem natural e geração de respostas  
+- Ollama → Execução local do modelo de IA  
 - LangChain → Orquestração de contexto e fluxo de interação com o modelo  
 - GitHub → Versionamento, documentação e colaboração  
 
