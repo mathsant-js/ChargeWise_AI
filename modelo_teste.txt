@@ -1,20 +1,18 @@
 Pergunta: Como é calculado o valor da recarga do meu carro?
-Resposta esperada: O valor é calculado com base no consumo de energia em kWh multiplicado pela tarifa de energia elétrica do condomínio.
+Resposta esperada: O valor da recarga é calculado multiplicando o consumo de energia do veículo (kWh) pela tarifa de energia elétrica (R$/kWh) praticada pelo condomínio. A fórmula básica é: Custo = Consumo (kWh) × Tarifa (R$/kWh). Por exemplo, se seu carro consumiu 30 kWh para uma recarga completa e a tarifa é R$ 0,85/kWh, o custo será de R$ 25,50. Caso o condomínio aplique taxas de administração ou regras de rateio, esses valores podem ser acrescidos ao cálculo base.
 
 Pergunta: O que acontece se a demanda de energia for muito alta no condomínio?
-Resposta esperada: O sistema pode gerenciar a distribuição de potência para evitar sobrecarga, reduzindo ou equilibrando o fornecimento entre os usuários.
-
+Resposta esperada: Quando a demanda de energia é muito alta, o condomínio pode sofrer sobrecarga na rede elétrica, acionamento de disjuntores ou cobrança de tarifas adicionais por demanda de ponta pelas concessionárias. Para evitar isso, sistemas de gestão de recarga aplicam balanceamento de carga, limitando a potência disponível por carregador ou escalonando os horários de uso. Por exemplo, se a capacidade total disponível for 22 kW e dois veículos carregam simultaneamente, cada um pode receber apenas 11 kW, dobrando o tempo de recarga, mas mantendo a operação segura dentro do limite contratual.
 Pergunta: Como posso saber quanto já consumi de energia na recarga?
 Resposta esperada: O consumo pode ser monitorado pelo sistema, que registra a quantidade de energia utilizada em kWh por usuário.
 
 Pergunta: O chatbot pode ajudar a estimar o custo antes da recarga?
-Resposta esperada: Sim, desde que o usuário informe o consumo estimado ou a capacidade da bateria, o sistema pode calcular um valor aproximado.
+Resposta esperada: Sim, é possível estimar o custo antes da recarga utilizando a capacidade da bateria, o nível de carga atual e a tarifa de energia do condomínio. A fórmula aplicada é: Custo estimado = (Capacidade da bateria em kWh × % de recarga necessária) × Tarifa (R$/kWh). Por exemplo, para uma bateria de 60 kWh com 20% de carga e tarifa de R$ 0,90/kWh, o custo para recarregar até 100% seria aproximadamente 60 × 0,80 × 0,90 = R$ 43,20.
 
 Pergunta: Quanto tempo demora para carregar um carro?
-Resposta esperada: Depende da potência do carregador e da capacidade da bateria.
-
+Resposta esperada: O tempo de recarga depende da capacidade da bateria, da potência do carregador e do nível de carga atual do veículo. A fórmula básica é: Tempo (h) = Energia necessária (kWh) ÷ Potência do carregador (kW), considerando perdas de eficiência de cerca de 10%. Por exemplo, para recarregar 40 kWh em um carregador de 7,4 kW, o tempo estimado é de aproximadamente 40 ÷ 7,4 ≈ 5,4 horas, ou cerca de 6 horas com as perdas consideradas.
 Pergunta: Como o sistema contribui para a eficiência energética do condomínio?
 Resposta esperada: Ao controlar o consumo, distribuir a potência e organizar o uso dos carregadores, o sistema melhora a eficiência energética e reduz desperdícios.
 
 Pergunta: Como o sistema organiza o uso dos carregadores entre os moradores?
-Resposta esperada: O sistema pode aplicar regras de uso e agendamento, garantindo uma distribuição justa e organizada entre os usuários.
+Resposta esperada: O sistema organiza o uso dos carregadores por meio de regras de agendamento, prioridade e balanceamento de carga definidas pelo condomínio. A distribuição pode seguir critérios como tempo máximo de uso por sessão, rodízio de horários ou reserva via aplicativo, garantindo acesso equitativo. Por exemplo, se há dois carregadores e dez moradores interessados, o sistema pode limitar sessões a 4 horas e permitir agendamento com 24h de antecedência, evitando conflitos e otimizando a disponibilidade.
