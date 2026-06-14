@@ -1,4 +1,5 @@
-from config import client
+from config import client, MODELO_IA
+from escopo import dentro_do_escopo
 
 def carregar_system_prompt():
 
@@ -48,6 +49,15 @@ class GoodWeChatbot:
         temperatura=0.3,
         max_tokens=800
     ):
+        if not dentro_do_escopo(pergunta):
+
+            return (
+                "Essa pergunta está fora do escopo "
+                "do assistente GoodWe EV ChargeOps. "
+                "Posso auxiliar apenas com gestão "
+                "de recarga de veículos elétricos "
+                "em condomínios."
+            )
 
         self.historico.append(
             {
@@ -57,7 +67,7 @@ class GoodWeChatbot:
         )
 
         resposta = client.chat(
-            model="gpt-oss:120b",
+            model=MODELO_IA,
             messages=self.historico,
             options={
                 "temperature": temperatura,
