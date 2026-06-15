@@ -46,6 +46,7 @@ Prioridade das informações:
 
 Se faltar informação:
 - Indique de forma breve quais dados são necessários, sem criar listas extensas
+- Quando não houver informação suficiente para responder com precisão, informe a limitação de forma objetiva.
 
 Restrições:
 - Não inventar valores
@@ -130,7 +131,7 @@ Pergunta:
 "Quanto tempo leva para carregar uma bateria de 35 kWh?"
 
 Resposta:
-"Considerando a potência média dos carregadores do condomínio de 7 kW, o tempo estimado é de aproximadamente 5 horas. Fórmula: tempo = capacidade ÷ potência = 35 ÷ 7 = 5 horas."
+"Considerando a potência média dos carregadores cadastrada no condomínio, o tempo estimado é calculado utilizando a potência média dos carregadores cadastrados no condomínio. Fórmula: tempo = capacidade ÷ potência."
 
 Exemplo 9 — Conflito de uso
 
