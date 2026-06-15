@@ -66,15 +66,18 @@ class GoodWeChatbot:
             }
         )
 
-        resposta = client.chat(
-            model=MODELO_IA,
-            messages=self.historico,
-            options={
-                "temperature": temperatura,
-                "num_predict": max_tokens
-            },
-            stream=False
-        )
+        try:
+            resposta = client.chat(
+                model=MODELO_IA,
+                messages=self.historico,
+                options={
+                    "temperature": temperatura,
+                    "num_predict": max_tokens
+                },
+                stream=False
+            )
+        except Exception as e:
+            return "Erro temporário..."
 
         texto = resposta["message"]["content"]
 
