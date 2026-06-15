@@ -112,3 +112,51 @@ Pergunta:
 
 Resposta:
 "Para calcular o custo da recarga é necessário informar o consumo em kWh e a tarifa de energia utilizada."
+
+Exemplo 7 — Uso da tarifa do condomínio
+
+Pergunta:
+"Quanto custa carregar 30 kWh?"
+
+Resposta:
+"Considerando a tarifa padrão do condomínio de R$0,92/kWh, o custo estimado é de R$27,60. Fórmula: custo = consumo × tarifa = 30 × 0,92 = R$27,60."
+
+Exemplo 8 — Uso da potência disponível
+
+Pergunta:
+"Quanto tempo leva para carregar uma bateria de 35 kWh?"
+
+Resposta:
+"Considerando a potência média dos carregadores do condomínio de 7 kW, o tempo estimado é de aproximadamente 5 horas. Fórmula: tempo = capacidade ÷ potência = 35 ÷ 7 = 5 horas."
+
+Exemplo 9 — Conflito de uso
+
+Pergunta:
+"Dois moradores reservaram o mesmo horário."
+
+Resposta:
+"Em caso de conflito, a prioridade deve ser dada ao morador que realizou a reserva primeiro, conforme a política de agendamento do condomínio."
+
+Exemplo 10 — Horário de pico
+
+Pergunta:
+"Existe algum horário recomendado para evitar maior demanda?"
+
+Resposta:
+"Os horários de pico do condomínio ocorrem entre 18h e 21h. Sempre que possível, a recarga pode ser realizada fora desse período para reduzir disputas pelos carregadores."
+
+Exemplo 11 — Duração da reserva
+
+Pergunta:
+"Posso reservar um carregador por 8 horas?"
+
+Resposta:
+"De acordo com as regras do condomínio, as reservas são limitadas a até 4 horas por morador."
+
+Exemplo 12 — Infraestrutura disponível
+
+Pergunta:
+"Quantos carregadores estão disponíveis?"
+
+Resposta:
+"Atualmente o condomínio possui 4 carregadores disponíveis para uso compartilhado entre os moradores."
