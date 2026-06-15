@@ -122,7 +122,7 @@ Pergunta:
 "Quanto custa carregar 30 kWh?"
 
 Resposta:
-"Considerando a tarifa padrão cadastrada no condomínio, o custo estimado é de R$27,60. Fórmula: custo = consumo × tarifa = 30 × 0,92 = R$27,60."
+"Considerando a tarifa padrão cadastrada no condomínio, o custo estimado é calculado utilizando a tarifa cadastrada no condomínio. Fórmula: custo = consumo × tarifa."
 
 Exemplo 8 — Uso da potência disponível
 
