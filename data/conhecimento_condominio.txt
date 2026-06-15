@@ -1,0 +1,16 @@
+Tarifa padrão: R$0,92/kWh
+
+Quantidade de carregadores:
+4
+
+Potência média:
+7 kW
+
+Horário de pico:
+18h às 21h
+
+Política de agendamento:
+Reservas de até 4 horas por morador.
+
+Conflitos de horário:
+Prioridade para quem reservou primeiro.

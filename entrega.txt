@@ -1,8 +1,0 @@
-Nome: Bruno — RM: 572648
-Nome: Marcos — RM: 573857
-Nome: Bernardo — RM: 568808
-Nome: Gabriel — RM: 571735
-Nome: Guilherme — RM: 571951
-
-Link do repositório:
-https://github.com/Brunoo7/Sprint1_Jorge.git
