@@ -50,14 +50,33 @@ ChargeGrid-Intelligence/
 │   ├── system_prompt_v2.md
 │   └── README.md
 ├── src/
-│   ├── chain/            # builder.py, memoria.py
-│   ├── guardrails/       # scope_validator.py, moderation.py
-│   └── schemas/          # consulta_recarga.py
-├── evals/                # dataset, run_evals.py, resultados
-├── docs/                  # ← **este arquivo**
-├── tests/                 # casos de teste unitários
-├── app.py, chatbot.py, config.py, README.md, requirements.txt
-└── .gitignore
+│   ├── chain/
+│   │   ├── builder.py
+│   │   └── memoria.py
+│   ├── schemas/
+│   │   └── consulta_recarga.py
+│   ├── guardrails/
+│   │   ├── scope_validator.py
+│   │   └── moderation.py
+│   ├── config.py
+│   └── main.py
+├── evals/
+│   ├── eval_dataset.json
+│   ├── run_evals.py
+│   ├── legacy_results.json
+│   └── sprint3_results.json
+├── tests/
+│   ├── test_chain.py
+│   ├── test_memoria.py
+│   ├── test_schemas.py
+│   └── test_guardrails.py
+├── docs/
+│   ├── relatorio_modelos.md
+│   └── relatorio_evolucao.pdf
+├── .env.example
+├── .gitignore
+├── requirements.txt
+└── README.md
 ```
 
 ## 4. Chain LCEL
