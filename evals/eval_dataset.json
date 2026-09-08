@@ -1,0 +1,17 @@
+[
+  {
+    "session_id": "sess_001",
+    "input": "Qual a potência do carregador do apartamento 12?",
+    "expected_intent": "potencia"
+  },
+  {
+    "session_id": "sess_002",
+    "input": "Qual o valor estimado da recarga de hoje?",
+    "expected_intent": "faturamento"
+  },
+  {
+    "session_id": "sess_003",
+    "input": "Me conte sobre a política de segurança elétrica.",
+    "expected_intent": "fora_do_escopo"
+  }
+]

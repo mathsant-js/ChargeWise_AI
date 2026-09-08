@@ -1,0 +1,29 @@
+[
+  {
+    "session_id": "sess_001",
+    "input": "Qual a potência do carregador do apartamento 12?",
+    "expected_intent": "potencia",
+    "response": "Resposta simulada para: Qual a potência do carregador do apartamento 12?",
+    "intent_found": false,
+    "time_s": 0.0,
+    "tokens": 34
+  },
+  {
+    "session_id": "sess_002",
+    "input": "Qual o valor estimado da recarga de hoje?",
+    "expected_intent": "faturamento",
+    "response": "Resposta simulada para: Qual o valor estimado da recarga de hoje?",
+    "intent_found": false,
+    "time_s": 0.0,
+    "tokens": 28
+  },
+  {
+    "session_id": "sess_003",
+    "input": "Me conte sobre a política de segurança elétrica.",
+    "expected_intent": "fora_do_escopo",
+    "response": "Resposta simulada para: Me conte sobre a política de segurança elétrica.",
+    "intent_found": false,
+    "time_s": 0.0,
+    "tokens": 29
+  }
+]
