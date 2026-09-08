@@ -1,4 +1,10 @@
 import os
+from ollama import Client
+from dotenv import load_dotenv
+
+load_dotenv()
+
+MODELO_IA = "gpt-oss:120b"
 
 class MockClient:
     def chat(self, *_, **__):
