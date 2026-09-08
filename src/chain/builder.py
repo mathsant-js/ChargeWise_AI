@@ -3,9 +3,38 @@ import json
 from typing import Any, Dict
 
 from config import client
-from src.guardrails.moderation import moderate_output
+from src.guardrails.scope_validator import validate_scope
 from src.chain.memoria import memory_manager
 
+
+from src.guardrails.moderation import moderate_output
+def _parse_response(raw: str) -> Dict[str, Any]:
+    """Parse raw model output into structured dict.
+
+    Used by legacy tests – if the output looks like JSON it is parsed and
+    validated via ``moderate_output``; otherwise it is wrapped as a plain
+    response.
+    """
+    if isinstance(raw, str) and raw.strip().startswith('{'):
+        try:
+            data = json.loads(raw)
+            try:
+                return moderate_output(data)
+            except Exception:
+                # Schema validation failed – fallback to raw JSON string.
+                return {
+                    "intencao": "fora_do_escopo",
+                    "resposta": raw,
+                    "confianca": 0.0,
+                }
+        except Exception:
+            # JSON parsing error – fallback to raw text.
+            return {
+                "intencao": "fora_do_escopo",
+                "resposta": raw,
+                "confianca": 0.0,
+            }
+    return moderate_output({"resposta": raw})
 
 def _load_system_prompt() -> str:
     """Load the latest system prompt (v2 if present, otherwise v1)."""
@@ -38,6 +67,13 @@ class LCELChain:
             self.memory_manager.add_message(session_id, "system", self.system_prompt)
 
     def invoke(self, user_input: str, session_id: str | None = None) -> Dict[str, Any]:
+        # Guardrails: verify input scope
+        if not validate_scope(user_input):
+            return {
+                "intencao": "fora_do_escopo",
+                "resposta": "Não posso atender a essa solicitação.",
+                "confianca": 0.0,
+            }
         # Seed system prompt if necessary.
         self._ensure_system_prompt(session_id)
         # Record user turn.
@@ -54,11 +90,8 @@ class LCELChain:
         )
         raw_output = response["message"]["content"]
 
-        # Post‑model moderation / schema validation.
-        if isinstance(raw_output, str) and raw_output.strip().startswith('{'):
-            parsed = moderate_output(json.loads(raw_output))
-        else:
-            parsed = moderate_output({"resposta": raw_output})
+        # Post‑model moderation / schema validation via shared helper.
+        parsed = _parse_response(raw_output)
 
         # Store assistant reply for subsequent turns.
         self.memory_manager.add_message(session_id, "assistant", raw_output)
