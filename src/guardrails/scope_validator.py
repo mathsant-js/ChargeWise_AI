@@ -1,19 +1,20 @@
 import re
 
 # Simple placeholder implementation – real project will have extensive regexes
-# and keyword blacklists.  For now we block obvious out‑of‑scope patterns.
+import re
 
+# Expanded blacklist covering jailbreak, injection, illegal requests and domain‑specific risks.
 FORBIDDEN_PATTERNS = [
-    r"(?:\b(?:jailbreak|hack|bypass)\b)",
-    r"(?:\b(?:lei|legal|jurídico|financeiro)\b)",
-    r"(?:\b(?:instalação|eletricidade|risco)\b)",
+    r"(?:\\b(?:jailbreak|hack|bypass|prompt\\s*injection)\\b)",
+    r"(?:\\b(?:lei|legal|jur\u00eddico|financeiro|fraud|dangerous)\\b)",
+    r"(?:\\b(?:instala\u00e7\u00e3o|eletricidade|risco|system\\s*prompt|reveal\\s*system\\s*prompt)\\b)",
 ]
 
-def is_allowed(user_input: str) -> bool:
+def validate_scope(user_input: str) -> bool:
     """Return ``True`` if the input is within the allowed GoodWe scope.
 
-    The function currently checks a small set of disallowed keywords.  It can be
-    expanded with more sophisticated language‑model‑driven checks later.
+    Checks the expanded ``FORBIDDEN_PATTERNS`` list.  Future versions may use
+    LLM‑driven classification, but for now a simple regex match suffices.
     """
     lowered = user_input.lower()
     for pat in FORBIDDEN_PATTERNS:

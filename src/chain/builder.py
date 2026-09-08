@@ -3,9 +3,12 @@ import json
 from typing import Any, Dict
 
 from config import client
+from src.guardrails.moderation import moderate_output
+from src.chain.memoria import memory_manager
 
-# Load the latest system prompt (v2 if exists else v1)
+
 def _load_system_prompt() -> str:
+    """Load the latest system prompt (v2 if present, otherwise v1)."""
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
     prompts_dir = os.path.join(base_dir, "prompts")
     v2_path = os.path.join(prompts_dir, "system_prompt_v2.md")
@@ -17,73 +20,51 @@ def _load_system_prompt() -> str:
         return f.read()
 
 
-# Simple fallback parser: try JSON -> ConsultaRecarga, otherwise wrap raw text
-def _parse_response(raw: str) -> Dict[str, Any]:
-    from src.schemas.consulta_recarga import ConsultaRecarga
-    try:
-        # Assume the model may return a JSON representation of the schema
-        data = json.loads(raw)
-        # Validate via Pydantic
-        model = ConsultaRecarga.model_validate(data)
-        return model.model_dump()
-    except Exception:
-        # Fallback – treat as plain text, set minimal fields
-        return ConsultaRecarga(
-            intencao="fora_do_escopo",
-            resposta=raw,
-            confianca=0.5,
-        ).model_dump()
-
 class LCELChain:
-    """Very lightweight stand‑in for the LangChain LCEL chain.
+    """Simple LCEL‑like chain that respects per‑session memory.
 
-    It builds a simple prompt, calls the Ollama client (or the mock client) and
-    returns a validated ``ConsultaRecarga`` dictionary.
+    It loads the system prompt, stores it in the in‑memory ``memory_manager``
+    (so it persists across turns), sends the assembled messages to the
+    ``client`` and finally runs post‑model moderation.
     """
 
-    def __init__(self):
-        # Load system prompt and initialise a per‑session memory manager.
+    def __init__(self) -> None:
         self.system_prompt = _load_system_prompt()
-        from src.chain.memoria import memory_manager
         self.memory_manager = memory_manager
 
+    def _ensure_system_prompt(self, session_id: str | None) -> None:
+        """Guarantee that the system prompt is the first message for a session."""
+        if not self.memory_manager.get_history(session_id):
+            self.memory_manager.add_message(session_id, "system", self.system_prompt)
+
     def invoke(self, user_input: str, session_id: str | None = None) -> Dict[str, Any]:
-        # Retrieve the current history for this session (including system prompt).
-        # The memory manager guarantees the token budget.
-        history = self.memory_manager.get_history(session_id)
-        # If the history is empty we start with the system prompt.
-        if not history:
-            history = [{"role": "system", "content": self.system_prompt}]
-        # Append the new user message.
+        # Seed system prompt if necessary.
+        self._ensure_system_prompt(session_id)
+        # Record user turn.
         self.memory_manager.add_message(session_id, "user", user_input)
-        # Build the full list of messages (system + prior + new user).
-        # Append the user message to memory (already done above) and get the updated history.
-        # Ensure the system prompt is the first entry – `memory_manager` never removes it.
+        # Retrieve full conversation history.
         messages = self.memory_manager.get_history(session_id)
 
-
-        # Ensure the system prompt is present – `memory_manager` guarantees it.
-        # The client expects a list of dicts with keys "role" and "content".
-        # No further transformation needed.
-        # Call the client (real or mock)
+        # Call the model with the required options.
         response = client.chat(
             model="gpt-oss:120b",
             messages=messages,
-            options={"temperature": 0.3, "num_predict": 800},
+            options={"temperature": 0.3, "max_tokens": 800, "top_p": 0.9},
             stream=False,
         )
-        # Parse the raw model output (may be JSON or plain text)
         raw_output = response["message"]["content"]
-        # Post‑model moderation – enforce schema compliance
-        from src.guardrails.moderation import moderate_output
-        parsed = moderate_output(json.loads(raw_output) if raw_output.strip().startswith('{') else {"resposta": raw_output})
-        # Store assistant reply in memory (as plain text for future turns)
+
+        # Post‑model moderation / schema validation.
+        if isinstance(raw_output, str) and raw_output.strip().startswith('{'):
+            parsed = moderate_output(json.loads(raw_output))
+        else:
+            parsed = moderate_output({"resposta": raw_output})
+
+        # Store assistant reply for subsequent turns.
         self.memory_manager.add_message(session_id, "assistant", raw_output)
         return parsed
 
 
-
 def create_chain() -> LCELChain:
-    """Factory function used by tests and the application.
-    """
+    """Factory used by the application and tests."""
     return LCELChain()
