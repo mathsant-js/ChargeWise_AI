@@ -1,4 +1,4 @@
-from chatbot import GoodWeChatbot
+from src.chatbot import GoodWeChatbot
 
 bot = GoodWeChatbot()
 
@@ -10,19 +10,10 @@ print("Olá! Sou seu assistente de gestão de recarga de veículos elétricos em
 print("Posso ajudar com custos, tempo de recarga e uso compartilhado dos carregadores.")
 print("Qual a sua dúvida?")
 
-
 while True:
-
     pergunta = input("\nVocê: ")
-
-    if pergunta.lower() in [
-        "sair",
-        "exit",
-        "quit"
-    ]:
+    if pergunta.lower() in ["sair", "exit", "quit"]:
         break
-
     resposta = bot.responder(pergunta)
-
     print("\nAssistente:")
     print(resposta)

@@ -2,7 +2,7 @@ import os
 import json
 from typing import Any, Dict
 
-from config import client
+from src.config import client
 from src.guardrails.scope_validator import validate_scope
 from src.chain.memoria import memory_manager
 
