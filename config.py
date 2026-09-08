@@ -20,5 +20,15 @@ class MockClient:
             user_msg = _[1]["content"] if len(_)>1 else ""
         return {"message": {"content": f"Resposta simulada para: {user_msg}"}}
 
-client = MockClient()
+# If OLLAMA_API_KEY is present, instantiate a real Ollama client;
+# otherwise fall back to the deterministic mock client.
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
+if OLLAMA_API_KEY:
+    try:
+        client = Client()
+    except Exception:  # pragma: no cover
+        client = MockClient()
+else:
+    client = MockClient()
+
 api = None
