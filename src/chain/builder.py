@@ -37,13 +37,17 @@ from src.chain.memoria import (
 
 
 def _load_system_prompt() -> str:
-    """Load the latest system prompt (v2 if present, otherwise v1)."""
+    """Load the latest available system prompt."""
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
     prompts_dir = os.path.join(base_dir, "prompts")
+    v3_path = os.path.join(prompts_dir, "system_prompt_v3.md")
     v2_path = os.path.join(prompts_dir, "system_prompt_v2.md")
     v1_path = os.path.join(prompts_dir, "system_prompt_v1.md")
-    path = v2_path if os.path.isfile(v2_path) else v1_path
-    if not os.path.isfile(path):
+    path = next(
+        (candidate for candidate in (v3_path, v2_path, v1_path) if os.path.isfile(candidate)),
+        None,
+    )
+    if path is None:
         return "System prompt not found."
     with open(path, "r", encoding="utf-8") as prompt_file:
         return prompt_file.read()
@@ -231,6 +235,7 @@ class LCELChainWrapper:
         memory_limit = history_limit - max_output_tokens - fixed_tokens
         self.memory_store = SessionMemoryStore(chat_model, memory_limit)
         self._schema_validity: dict[str, bool] = {}
+        self._guardrail_history: dict[str, list[str]] = {}
         self.chain = create_chain(
             model=chat_model,
             history_limit=history_limit,
@@ -240,13 +245,13 @@ class LCELChainWrapper:
         )
 
     def invoke(self, user_input: str, session_id: str = "default") -> dict[str, Any]:
-        if not validate_scope(user_input):
+        prior_inputs = self._guardrail_history.get(session_id, [])[-4:]
+        decision = validate_scope(user_input, " ".join(prior_inputs))
+        self._guardrail_history.setdefault(session_id, []).append(user_input)
+        self._guardrail_history[session_id] = self._guardrail_history[session_id][-5:]
+        if not decision.allowed:
             self._schema_validity[session_id] = True
-            return {
-                "intencao": "fora_do_escopo",
-                "resposta": "Não posso atender a essa solicitação.",
-                "confianca": 0.0,
-            }
+            return decision.refusal()
 
         result = self.chain.invoke(
             {MEMORY_INPUT_KEY: user_input},
@@ -257,6 +262,7 @@ class LCELChainWrapper:
 
     def clear_session(self, session_id: str) -> None:
         self.memory_store.clear(session_id)
+        self._guardrail_history.pop(session_id, None)
 
     def memory_metrics(self, session_id: str) -> dict[str, Any]:
         return self.memory_store.metrics(session_id)
