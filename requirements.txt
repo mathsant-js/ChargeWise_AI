@@ -1,2 +1,7 @@
 python-dotenv
 ollama
+langchain
+langchain-ollama
+langchain-community
+pydantic
+tiktoken

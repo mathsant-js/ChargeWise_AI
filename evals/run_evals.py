@@ -2,7 +2,7 @@ import os
 import json
 import time
 import sys, os; sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from chatbot import GoodWeChatbot
+from src.chatbot import GoodWeChatbot
 from tiktoken import get_encoding
 
 # Helper to count tokens (approximate, using tiktoken's cl100k_base)

@@ -1,41 +1,16 @@
 import os
-import json
-from typing import Any, Dict
+from typing import Any, Dict, List
 
-from src.config import client, MockClient
+from langchain_ollama import ChatOllama
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.output_parsers import PydanticOutputParser
+
+from src.config import MODELO_IA
+from src.schemas.consulta_recarga import ConsultaRecarga
 from src.guardrails.scope_validator import validate_scope
-from src.chain.memoria import memory_manager
-
-
 from src.guardrails.moderation import moderate_output
-def _parse_response(raw: str) -> Dict[str, Any]:
-    """Parse raw model output into structured dict.
-
-    Used by legacy tests – if the output looks like JSON it is parsed and
-    validated via ``moderate_output``; otherwise it is wrapped as a plain
-    response.
-    """
-    if isinstance(raw, str) and raw.strip().startswith('{'):
-        try:
-            data = json.loads(raw)
-            result = moderate_output(data)
-            # If moderation produced a safe‑refusal because required fields were missing,
-            # fall back to returning the raw JSON string as the response (test expects this).
-            if result.get("intencao") == "fora_do_escopo" and "resposta" not in data:
-                return {
-                    "intencao": "fora_do_escopo",
-                    "resposta": raw,
-                    "confianca": 0.0,
-                }
-            return result
-        except Exception:
-            # JSON parsing error – fallback to raw text.
-            return {
-                "intencao": "fora_do_escopo",
-                "resposta": raw,
-                "confianca": 0.0,
-            }
-    return moderate_output({"resposta": raw})
 
 def _load_system_prompt() -> str:
     """Load the latest system prompt (v2 if present, otherwise v1)."""
@@ -49,25 +24,80 @@ def _load_system_prompt() -> str:
     with open(path, "r", encoding="utf-8") as f:
         return f.read()
 
+# Store for session histories
+store = {}
 
-class LCELChain:
-    """Simple LCEL‑like chain that respects per‑session memory.
+def get_session_history(session_id: str):
+    if session_id not in store:
+        store[session_id] = ChatMessageHistory()
+    return store[session_id]
 
-    It loads the system prompt, stores it in the in‑memory ``memory_manager``
-    (so it persists across turns), sends the assembled messages to the
-    ``client`` and finally runs post‑model moderation.
+def create_chain():
     """
+    Creates a real LCEL chain: prompt | llm | parser.
+    Integrated with RunnableWithMessageHistory for per-session memory.
+    """
+    system_prompt = _load_system_prompt()
+    
+    # 1. Define the prompt template
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", system_prompt),
+        MessagesPlaceholder(variable_name="history"),
+        ("human", "{input}"),
+    ])
 
-    def __init__(self) -> None:
-        self.system_prompt = _load_system_prompt()
-        self.memory_manager = memory_manager
+    # 2. Initialize the model
+    # In a real scenario, we'd use the ChatOllama class.
+    # To maintain the 'Mock' capability from config.py, one would typically
+    # mock the ChatOllama object in tests.
+    llm = ChatOllama(model=MODELO_IA, temperature=0.2)
 
-    def _ensure_system_prompt(self, session_id: str | None) -> None:
-        """Guarantee that the system prompt is the first message for a session."""
-        if not self.memory_manager.get_history(session_id):
-            self.memory_manager.add_message(session_id, "system", self.system_prompt)
+    # 3. Structured output parser
+    parser = PydanticOutputParser(pydantic_object=ConsultaRecarga)
+    
+    # We instruct the model to output JSON by adding formatting instructions to the prompt
+    prompt = prompt.partial(format_instructions=parser.get_format_instructions())
+    # Add format instructions to the system message for better compliance
+    # (Simplified here; in production, we'd merge them into the system prompt)
+    
+    # 4. Build the LCEL chain
+    # chain = prompt | llm | parser
+    # However, since we need post-model moderation, we wrap it.
+    
+    def moderation_wrapper(output):
+        # If parser succeeded, output is a ConsultaRecarga object. 
+        # We convert it to dict and run moderation.
+        if isinstance(output, ConsultaRecarga):
+            return moderate_output(output.model_dump())
+        
+        # If parser failed (returning raw string), moderation handles it.
+        return moderate_output({"resposta": str(output)})
 
-    def invoke(self, user_input: str, session_id: str | None = None) -> Dict[str, Any]:
+    # Full chain construction
+    chain = prompt | llm | parser
+    
+    # We use a functional approach to add moderation at the end of the chain
+    # In LCEL: chain = chain | moderation_wrapper (using a RunnableLambda)
+    from langchain_core.runnables import RunnableLambda
+    full_chain = chain | RunnableLambda(moderation_wrapper)
+
+    # 5. Add Message History
+    return RunnableWithMessageHistory(
+        full_chain,
+        get_session_history,
+        input_messages_key="input",
+        history_messages_key="history",
+    )
+
+class LCELChainWrapper:
+    """
+    A wrapper to maintain the .invoke() interface for the application,
+    including the pre-model scope validation.
+    """
+    def __init__(self):
+        self.chain = create_chain()
+
+    def invoke(self, user_input: str, session_id: str = "default") -> Dict[str, Any]:
         # Guardrails: verify input scope
         if not validate_scope(user_input):
             return {
@@ -75,36 +105,13 @@ class LCELChain:
                 "resposta": "Não posso atender a essa solicitação.",
                 "confianca": 0.0,
             }
-        # Seed system prompt if necessary.
-        self._ensure_system_prompt(session_id)
-        # Record user turn.
-        self.memory_manager.add_message(session_id, "user", user_input)
-        # Retrieve full conversation history.
-        messages = self.memory_manager.get_history(session_id)
+        
+        # Invoke the LangChain LCEL chain
+        return self.chain.invoke(
+            {"input": user_input},
+            config={"configurable": {"session_id": session_id}}
+        )
 
-        # Call the model with the required options.
-        try:
-            response = client.chat(
-                model="gpt-oss:120b",
-                messages=messages,
-                options={"temperature": 0.3, "max_tokens": 800, "top_p": 0.9},
-                stream=False,
-            )
-        except Exception as e:
-            # Fallback to mock chat if real client fails.
-            mock_client = MockClient()
-            response = mock_client.chat(messages=messages)
+def create_chain_wrapper():
+    return LCELChainWrapper()
 
-        raw_output = response["message"]["content"]
-
-        # Post‑model moderation / schema validation via shared helper.
-        parsed = _parse_response(raw_output)
-
-        # Store assistant reply for subsequent turns.
-        self.memory_manager.add_message(session_id, "assistant", raw_output)
-        return parsed
-
-
-def create_chain() -> LCELChain:
-    """Factory used by the application and tests."""
-    return LCELChain()
