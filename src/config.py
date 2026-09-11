@@ -5,7 +5,7 @@ from ollama import Client
 
 load_dotenv()
 
-MODELO_IA = os.getenv("OLLAMA_MODEL", "gemma4:31b")
+MODELO_IA = os.getenv("OLLAMA_MODEL", "gpt-oss:120b")
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "https://ollama.com")
 OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "")
 TEMPERATURE = float(os.getenv("OLLAMA_TEMPERATURE", "0.2"))
