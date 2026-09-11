@@ -4,7 +4,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MODELO_IA = "gpt-oss:120b"
+MODELO_IA = "gemma4:31b"
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "https://ollama.com")
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "")
+
+# Define headers for cloud authentication
+OLLAMA_HEADERS = {
+    "Authorization": f"Bearer {OLLAMA_API_KEY}"
+}
 
 class MockClient:
     def chat(self, *_, **__):
@@ -16,14 +23,11 @@ class MockClient:
         return {"message": {"content": f"Resposta simulada para: {user_msg}"}}
 
 # For unit tests and CI we always use the deterministic mock client.
-# Uncomment the block below to use a real Ollama client if available.
 client = MockClient()
-OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
 if OLLAMA_API_KEY:
     try:
-        # Optionally use OLLAMA_HOST env var to point to a remote server.
-        ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-        client = Client(host=ollama_host)
+        # Use the centralized OLLAMA_HOST and headers
+        client = Client(host=OLLAMA_HOST, headers=OLLAMA_HEADERS)
     except Exception:  # pragma: no cover
         client = MockClient()
 else:

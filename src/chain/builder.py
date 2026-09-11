@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -47,10 +47,14 @@ def create_chain():
     ])
 
     # 2. Initialize the model
-    # In a real scenario, we'd use the ChatOllama class.
-    # To maintain the 'Mock' capability from config.py, one would typically
-    # mock the ChatOllama object in tests.
-    llm = ChatOllama(model=MODELO_IA, temperature=0.2)
+    # Use the centralized MODELO_IA, OLLAMA_HOST and OLLAMA_HEADERS from config.py
+    from src.config import MODELO_IA, OLLAMA_HOST, OLLAMA_HEADERS
+    llm = ChatOllama(
+        model=MODELO_IA, 
+        base_url=OLLAMA_HOST, 
+        headers=OLLAMA_HEADERS,
+        temperature=0.2
+    )
 
     # 3. Structured output parser
     parser = PydanticOutputParser(pydantic_object=ConsultaRecarga)
@@ -61,25 +65,30 @@ def create_chain():
     # (Simplified here; in production, we'd merge them into the system prompt)
     
     # 4. Build the LCEL chain
-    # chain = prompt | llm | parser
-    # However, since we need post-model moderation, we wrap it.
+    # Instead of a direct pipe to the parser which can crash on invalid JSON,
+    # we create a robust parsing and moderation function.
     
-    def moderation_wrapper(output):
-        # If parser succeeded, output is a ConsultaRecarga object. 
-        # We convert it to dict and run moderation.
-        if isinstance(output, ConsultaRecarga):
-            return moderate_output(output.model_dump())
+    def robust_parse_and_moderate(llm_output):
+        """
+        Tries to parse the LLM output as JSON using the Pydantic parser.
+        If parsing fails, it treats the output as plain text and passes it to moderation.
+        """
+        # llm_output is a BaseMessage (from ChatOllama)
+        raw_text = llm_output.content
         
-        # If parser failed (returning raw string), moderation handles it.
-        return moderate_output({"resposta": str(output)})
+        try:
+            # Attempt to parse as structured JSON
+            parsed_obj = parser.parse(raw_text)
+            # If successful, we validate via moderation
+            return moderate_output(parsed_obj.model_dump())
+        except Exception:
+            # If parsing fails (plain text or bad JSON), we treat it as a raw response
+            # and let the moderation guardrail handle it.
+            return moderate_output({"resposta": raw_text})
 
-    # Full chain construction
-    chain = prompt | llm | parser
-    
-    # We use a functional approach to add moderation at the end of the chain
-    # In LCEL: chain = chain | moderation_wrapper (using a RunnableLambda)
     from langchain_core.runnables import RunnableLambda
-    full_chain = chain | RunnableLambda(moderation_wrapper)
+    # Final Chain: Prompt -> LLM -> Robust Parsing & Moderation
+    full_chain = prompt | llm | RunnableLambda(robust_parse_and_moderate)
 
     # 5. Add Message History
     return RunnableWithMessageHistory(
