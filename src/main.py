@@ -10,10 +10,6 @@ import os
 os.environ["LANGCHAIN_TRACING_V2"] = "false"
 os.environ["LANGCHAIN_VERBOSE"] = "false"
 
-import warnings
-# Filter only DeprecationWarnings to avoid silencing critical errors
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-
 import sys
 
 # Adiciona a raiz do projeto ao sys.path para resolver importações absolutas

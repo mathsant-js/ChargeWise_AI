@@ -1,35 +1,39 @@
 import os
-from ollama import Client
+
 from dotenv import load_dotenv
+from ollama import Client
 
 load_dotenv()
 
-MODELO_IA = "gemma4:31b"
+MODELO_IA = os.getenv("OLLAMA_MODEL", "gemma4:31b")
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "https://ollama.com")
 OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "")
+TEMPERATURE = float(os.getenv("OLLAMA_TEMPERATURE", "0.2"))
+TOP_P = float(os.getenv("OLLAMA_TOP_P", "0.9"))
+MAX_OUTPUT_TOKENS = int(os.getenv("OLLAMA_MAX_OUTPUT_TOKENS", "500"))
+MESSAGE_TOKEN_LIMIT = int(os.getenv("MESSAGE_TOKEN_LIMIT", "4096"))
+USE_MOCK_MODEL = os.getenv("USE_MOCK_MODEL", "").lower() in {"1", "true", "yes"} or (
+    not OLLAMA_API_KEY and OLLAMA_HOST.rstrip("/") == "https://ollama.com"
+)
 
-# Define headers for cloud authentication
-OLLAMA_HEADERS = {
-    "Authorization": f"Bearer {OLLAMA_API_KEY}"
-}
+OLLAMA_HEADERS = (
+    {"Authorization": f"Bearer {OLLAMA_API_KEY}"} if OLLAMA_API_KEY else {}
+)
+
 
 class MockClient:
-    def chat(self, *_, **__):
-        msgs = __.get("messages", [])
-        if msgs:
-            user_msg = msgs[-1]["content"]
+    def chat(self, *args: object, **kwargs: object) -> dict[str, dict[str, str]]:
+        messages = kwargs.get("messages", [])
+        if isinstance(messages, list) and messages:
+            user_message = messages[-1]["content"]
         else:
-            user_msg = _[1]["content"] if len(_)>1 else ""
-        return {"message": {"content": f"Resposta simulada para: {user_msg}"}}
+            user_message = ""
+        return {"message": {"content": f"Resposta simulada para: {user_message}"}}
 
-# For unit tests and CI we always use the deterministic mock client.
-client = MockClient()
+
+client: Client | MockClient = MockClient()
 if OLLAMA_API_KEY:
     try:
-        # Use the centralized OLLAMA_HOST and headers
         client = Client(host=OLLAMA_HOST, headers=OLLAMA_HEADERS)
     except Exception:  # pragma: no cover
         client = MockClient()
-else:
-    client = MockClient()
-

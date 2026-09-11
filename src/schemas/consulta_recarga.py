@@ -1,7 +1,26 @@
-from pydantic import BaseModel, Field, field_validator
-from typing import Literal, Optional
+import math
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+
+EstadoCarregador = Literal[
+    "online",
+    "offline",
+    "carregando",
+    "disponivel",
+    "disponível",
+    "indisponivel",
+    "indisponível",
+    "erro",
+    "manutencao",
+    "manutenção",
+]
+
 
 class ConsultaRecarga(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
     intencao: Literal[
         "status_carregador",
         "potencia",
@@ -9,34 +28,40 @@ class ConsultaRecarga(BaseModel):
         "sustentabilidade",
         "fora_do_escopo",
     ] = Field(description="Intenção reconhecida da pergunta do usuário.")
-    resposta: str = Field(description="Resposta em linguagem natural para o usuário.")
-    estado_carregador: Optional[str] = Field(
+    resposta: str = Field(min_length=1, description="Resposta em linguagem natural para o usuário.")
+    estado_carregador: EstadoCarregador | None = Field(
         default=None,
-        description="Estado atual do carregador (ex.: online, offline, manutenção).",
+        description="Estado conhecido do carregador, sem acentos e em minúsculas.",
     )
-    potencia_kw: Optional[float] = Field(
-        default=None,
-        description="Potência do carregador em kW, se relevante.",
-        ge=0,
-    )
-    valor_estimado: Optional[float] = Field(
-        default=None,
-        description="Valor monetário estimado da recarga, se aplicável.",
-        ge=0,
-    )
-    requer_profissional: bool = Field(
-        default=False,
-        description="Indica se a resposta requer avaliação de um profissional habilitado.",
-    )
-    confianca: float = Field(
-        description="Nível de confiança da resposta (0‑1).",
-        ge=0,
-        le=1,
-    )
+    potencia_kw: float | None = Field(default=None, ge=0, allow_inf_nan=False, strict=True)
+    valor_estimado: float | None = Field(default=None, ge=0, allow_inf_nan=False, strict=True)
+    requer_profissional: bool = False
+    confianca: float = Field(ge=0, le=1, allow_inf_nan=False, strict=True)
 
-    @field_validator("confianca")
+    @field_validator("resposta")
     @classmethod
-    def validar_confianca(cls, v: float) -> float:
-        if not 0 <= v <= 1:
-            raise ValueError("A confiança deve estar entre 0 e 1.")
-        return v
+    def validar_resposta(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("A resposta não pode ser vazia.")
+        return value
+
+    @field_validator("potencia_kw", "valor_estimado", "confianca")
+    @classmethod
+    def validar_numero_finito(cls, value: float | None) -> float | None:
+        if value is not None and (isinstance(value, bool) or not math.isfinite(value)):
+            raise ValueError("O valor deve ser um número finito.")
+        return value
+
+    @model_validator(mode="after")
+    def validar_coerencia(self) -> "ConsultaRecarga":
+        if self.estado_carregador is not None and self.intencao != "status_carregador":
+            raise ValueError("estado_carregador exige intenção status_carregador.")
+        if self.valor_estimado is not None and self.intencao != "faturamento":
+            raise ValueError("valor_estimado exige intenção faturamento.")
+        if self.intencao == "fora_do_escopo" and any(
+            value is not None
+            for value in (self.estado_carregador, self.potencia_kw, self.valor_estimado)
+        ):
+            raise ValueError("Uma recusa não pode conter dados operacionais.")
+        return self
