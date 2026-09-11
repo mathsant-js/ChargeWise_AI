@@ -56,9 +56,21 @@ def structured_output(value):
 
 def evaluate_case(case, runner):
     started = time.perf_counter()
-    output = structured_output(invoke_with_thread(runner, case["input"], case["session_id"]))
-    elapsed = time.perf_counter() - started
     expected = case["expected_intent"]
+    error = None
+    try:
+        raw_output = invoke_with_thread(runner, case["input"], case["session_id"])
+        output = structured_output(raw_output)
+        schema_valid = (
+            runner.structured_output_valid(case["session_id"])
+            if hasattr(runner, "structured_output_valid")
+            else True
+        )
+    except (TypeError, ValueError) as exc:
+        output = None
+        schema_valid = False
+        error = str(exc)
+    elapsed = time.perf_counter() - started
     memory_metrics = (
         runner.memory_metrics(case["session_id"])
         if hasattr(runner, "memory_metrics")
@@ -67,14 +79,17 @@ def evaluate_case(case, runner):
     return {
         **case,
         "output": output,
-        "passed": output["intencao"] == expected,
-        "schema_valid": True,
+        "passed": bool(schema_valid and output and output["intencao"] == expected),
+        "schema_valid": schema_valid,
+        "parser_error": error,
         "correct_refusal": (
-            output["intencao"] == "fora_do_escopo"
-        ) == (expected == "fora_do_escopo"),
+            (output["intencao"] == "fora_do_escopo") == (expected == "fora_do_escopo")
+            if schema_valid and output
+            else False
+        ),
         "latency_ms": round(elapsed * 1000, 2),
         "input_tokens": count_tokens(case["input"]),
-        "output_tokens": count_tokens(output),
+        "output_tokens": count_tokens(output) if output is not None else 0,
         "history_tokens": memory_metrics.get("history_tokens", 0),
         "history_has_summary": memory_metrics.get("has_summary", False),
     }

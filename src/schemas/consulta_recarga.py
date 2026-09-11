@@ -19,7 +19,7 @@ EstadoCarregador = Literal[
 
 
 class ConsultaRecarga(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
 
     intencao: Literal[
         "status_carregador",

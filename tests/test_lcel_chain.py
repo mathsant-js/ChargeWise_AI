@@ -8,6 +8,7 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 
 from src.chain import builder
 from src.chatbot import GoodWeChatbot
+from src.guardrails.moderation import ModerationContext
 
 
 def valid_response(answer="Resposta de teste.", intent="status_carregador"):
@@ -85,6 +86,139 @@ class TestStructuredParser(unittest.TestCase):
         parsed = builder.robust_parse_and_moderate(self.Message('{"potencia_kw": -1}'))
         self.assertEqual(parsed["intencao"], "fora_do_escopo")
         self.assertEqual(parsed["confianca"], 0.0)
+        self.assertFalse(parsed.schema_valid)
+
+    def test_markdown_fence_is_rejected(self):
+        parsed = builder.robust_parse_and_moderate(
+            self.Message(f"```json\n{valid_response()}\n```")
+        )
+
+        self.assertFalse(parsed.schema_valid)
+        self.assertEqual(parsed["intencao"], "fora_do_escopo")
+
+    def test_extra_fields_are_rejected(self):
+        raw = json.dumps(
+            {
+                "intencao": "potencia",
+                "resposta": "Resposta válida.",
+                "confianca": 0.8,
+                "campo_nao_autorizado": "não deve passar",
+            }
+        )
+
+        parsed = builder.robust_parse_and_moderate(self.Message(raw))
+
+        self.assertFalse(parsed.schema_valid)
+        self.assertNotIn("campo_nao_autorizado", parsed)
+
+    def test_incorrect_numeric_types_are_rejected(self):
+        for field, value in (
+            ("confianca", "0.8"),
+            ("potencia_kw", "22"),
+            ("valor_estimado", True),
+        ):
+            data = {
+                "intencao": "faturamento" if field == "valor_estimado" else "potencia",
+                "resposta": "Resposta válida.",
+                "confianca": 0.8,
+                field: value,
+            }
+            parsed = builder.robust_parse_and_moderate(
+                self.Message(json.dumps(data))
+            )
+            self.assertFalse(parsed.schema_valid, field)
+
+    def test_provenance_is_supplied_outside_model_output(self):
+        claim = json.dumps(
+            {
+                "intencao": "potencia",
+                "resposta": "Segundo o manual oficial da GoodWe, a potência é 22 kW.",
+                "potencia_kw": 22.0,
+                "confianca": 0.8,
+            },
+            ensure_ascii=False,
+        )
+
+        without_source = builder.robust_parse_and_moderate(self.Message(claim))
+        with_source = builder.robust_parse_and_moderate(
+            self.Message(claim),
+            ModerationContext(official_sources=("manual-goodwe-gw22.pdf",)),
+        )
+
+        self.assertEqual(without_source["intencao"], "fora_do_escopo")
+        self.assertTrue(without_source.schema_valid)
+        self.assertEqual(with_source["potencia_kw"], 22.0)
+        self.assertTrue(with_source.schema_valid)
+
+    def test_model_cannot_self_declare_provenance(self):
+        data = json.loads(valid_response())
+        data["fonte_oficial"] = "fonte inventada pelo modelo"
+
+        parsed = builder.robust_parse_and_moderate(
+            self.Message(json.dumps(data, ensure_ascii=False))
+        )
+
+        self.assertFalse(parsed.schema_valid)
+
+    def test_domain_constraints_and_intent_coherence_are_enforced(self):
+        invalid_outputs = (
+            {
+                "intencao": "potencia",
+                "resposta": "Resposta válida.",
+                "confianca": 1.1,
+            },
+            {
+                "intencao": "potencia",
+                "resposta": "Resposta válida.",
+                "potencia_kw": -0.1,
+                "confianca": 0.8,
+            },
+            {
+                "intencao": "faturamento",
+                "resposta": "Resposta válida.",
+                "valor_estimado": -1.0,
+                "confianca": 0.8,
+            },
+            {
+                "intencao": "status_carregador",
+                "resposta": "Resposta válida.",
+                "estado_carregador": "desconhecido",
+                "confianca": 0.8,
+            },
+            {
+                "intencao": "potencia",
+                "resposta": "   ",
+                "confianca": 0.8,
+            },
+            {
+                "intencao": "potencia",
+                "resposta": "Resposta válida.",
+                "estado_carregador": "online",
+                "confianca": 0.8,
+            },
+            {
+                "intencao": "status_carregador",
+                "resposta": "Resposta válida.",
+                "valor_estimado": 10.0,
+                "confianca": 0.8,
+            },
+        )
+
+        for output in invalid_outputs:
+            parsed = builder.robust_parse_and_moderate(
+                self.Message(json.dumps(output, ensure_ascii=False))
+            )
+            self.assertFalse(parsed.schema_valid, output)
+
+    def test_non_finite_json_numbers_are_rejected(self):
+        for field in ("confianca", "potencia_kw", "valor_estimado"):
+            intent = "faturamento" if field == "valor_estimado" else "potencia"
+            raw = (
+                '{"intencao":"%s","resposta":"válida",'
+                '"confianca":0.8,"%s":NaN}' % (intent, field)
+            )
+            parsed = builder.robust_parse_and_moderate(self.Message(raw))
+            self.assertFalse(parsed.schema_valid, field)
 
 
 class TestLCELMemoryContract(unittest.TestCase):

@@ -1,5 +1,6 @@
 import os
 import re
+import json
 from typing import Any
 
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -21,7 +22,7 @@ from src.config import (
     TOP_P,
     USE_MOCK_MODEL,
 )
-from src.guardrails.moderation import moderate_output
+from src.guardrails.moderation import ModerationContext, moderate_output
 from src.guardrails.scope_validator import validate_scope
 from src.schemas.consulta_recarga import ConsultaRecarga
 from src.chain.memoria import (
@@ -49,6 +50,14 @@ def _load_system_prompt() -> str:
 
 
 parser = PydanticOutputParser(pydantic_object=ConsultaRecarga)
+
+
+class ValidatedOutput(dict[str, Any]):
+    """Public response data carrying non-serialized parser diagnostics."""
+
+    def __init__(self, data: dict[str, Any], schema_valid: bool) -> None:
+        super().__init__(data)
+        self.schema_valid = schema_valid
 
 
 class DeterministicChatModel(BaseChatModel):
@@ -113,14 +122,24 @@ class DeterministicChatModel(BaseChatModel):
         return ChatResult(generations=[ChatGeneration(message=AIMessage(content=content))])
 
 
-def robust_parse_and_moderate(llm_output: BaseMessage) -> dict[str, Any]:
+def robust_parse_and_moderate(
+    llm_output: BaseMessage,
+    moderation_context: ModerationContext | None = None,
+) -> ValidatedOutput:
     """Parse structured JSON and always apply post-model moderation."""
     raw_text = str(llm_output.content)
     try:
-        parsed_obj = parser.parse(raw_text)
-        return moderate_output(parsed_obj.model_dump())
-    except Exception:
-        return moderate_output({"resposta": raw_text})
+        raw_data = json.loads(
+            raw_text,
+            parse_constant=lambda value: (_ for _ in ()).throw(
+                ValueError(f"Constante JSON inválida: {value}")
+            ),
+        )
+        parsed_obj = ConsultaRecarga.model_validate(raw_data)
+        moderated = moderate_output(parsed_obj.model_dump(), moderation_context)
+        return ValidatedOutput(moderated, schema_valid=True)
+    except (json.JSONDecodeError, TypeError, ValueError):
+        return ValidatedOutput(moderate_output({"resposta": raw_text}), schema_valid=False)
 
 
 def _create_model() -> BaseChatModel:
@@ -144,6 +163,7 @@ def create_chain(
     history_limit: int = MESSAGE_TOKEN_LIMIT,
     max_output_tokens: int = MAX_OUTPUT_TOKENS,
     memory_store: SessionMemoryStore | None = None,
+    moderation_context: ModerationContext | None = None,
 ):
     """Build the LCEL chain with isolated, token-bounded session history."""
     chat_model = model or _create_model()
@@ -192,7 +212,9 @@ def create_chain(
         input_messages_key=MEMORY_INPUT_KEY,
         history_messages_key=MEMORY_HISTORY_KEY,
     )
-    return with_history | RunnableLambda(robust_parse_and_moderate)
+    return with_history | RunnableLambda(
+        lambda output: robust_parse_and_moderate(output, moderation_context)
+    )
 
 
 class LCELChainWrapper:
@@ -201,31 +223,37 @@ class LCELChainWrapper:
         model: BaseChatModel | None = None,
         history_limit: int = MESSAGE_TOKEN_LIMIT,
         max_output_tokens: int = MAX_OUTPUT_TOKENS,
+        moderation_context: ModerationContext | None = None,
     ) -> None:
         chat_model = model or _create_model()
         system_prompt = _load_system_prompt()
         fixed_tokens = count_text_tokens(system_prompt + parser.get_format_instructions())
         memory_limit = history_limit - max_output_tokens - fixed_tokens
         self.memory_store = SessionMemoryStore(chat_model, memory_limit)
+        self._schema_validity: dict[str, bool] = {}
         self.chain = create_chain(
             model=chat_model,
             history_limit=history_limit,
             max_output_tokens=max_output_tokens,
             memory_store=self.memory_store,
+            moderation_context=moderation_context,
         )
 
     def invoke(self, user_input: str, session_id: str = "default") -> dict[str, Any]:
         if not validate_scope(user_input):
+            self._schema_validity[session_id] = True
             return {
                 "intencao": "fora_do_escopo",
                 "resposta": "Não posso atender a essa solicitação.",
                 "confianca": 0.0,
             }
 
-        return self.chain.invoke(
+        result = self.chain.invoke(
             {MEMORY_INPUT_KEY: user_input},
             config={"configurable": {"session_id": session_id}},
         )
+        self._schema_validity[session_id] = getattr(result, "schema_valid", False)
+        return dict(result)
 
     def clear_session(self, session_id: str) -> None:
         self.memory_store.clear(session_id)
@@ -233,14 +261,19 @@ class LCELChainWrapper:
     def memory_metrics(self, session_id: str) -> dict[str, Any]:
         return self.memory_store.metrics(session_id)
 
+    def structured_output_valid(self, session_id: str) -> bool:
+        return self._schema_validity.get(session_id, False)
+
 
 def create_chain_wrapper(
     model: BaseChatModel | None = None,
     history_limit: int = MESSAGE_TOKEN_LIMIT,
     max_output_tokens: int = MAX_OUTPUT_TOKENS,
+    moderation_context: ModerationContext | None = None,
 ) -> LCELChainWrapper:
     return LCELChainWrapper(
         model=model,
         history_limit=history_limit,
         max_output_tokens=max_output_tokens,
+        moderation_context=moderation_context,
     )

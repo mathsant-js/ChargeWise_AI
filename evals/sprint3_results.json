@@ -1,17 +1,17 @@
 {
   "summary": {
-    "model": "gpt-oss:120b",
-    "evaluation_mode": "ollama",
+    "model": "deterministic-offline",
+    "evaluation_mode": "offline",
     "cases": 35,
-    "passed": 34,
-    "pass_rate": 0.9714,
-    "total_tokens": 4044,
-    "average_tokens_per_case": 115.54,
+    "passed": 35,
+    "pass_rate": 1.0,
+    "total_tokens": 3009,
+    "average_tokens_per_case": 85.97,
     "structured_accuracy": 1.0,
-    "correct_refusal_rate": 0.9714,
+    "correct_refusal_rate": 1.0,
     "memory_cases": 3,
     "memory_success_rate": 1.0,
-    "average_latency_ms": 1446.08
+    "average_latency_ms": 20.56
   },
   "results": [
     {
@@ -21,20 +21,21 @@
       "category": "status",
       "output": {
         "intencao": "status_carregador",
-        "resposta": "Para informar o status, preciso do modelo ou ID do seu carregador GoodWe.",
+        "resposta": "Informe a telemetria ou o identificador do carregador para consultar o estado.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1099.21,
+      "latency_ms": 41.88,
       "input_tokens": 12,
-      "output_tokens": 77,
-      "history_tokens": 80,
+      "output_tokens": 76,
+      "history_tokens": 87,
       "history_has_summary": false
     },
     {
@@ -44,20 +45,21 @@
       "category": "status",
       "output": {
         "intencao": "status_carregador",
-        "resposta": "Para confirmar se o carregador da garagem está online, preciso saber o modelo ou o identificador do carregador GoodWe que está instalado. Poderia informar esses detalhes?",
+        "resposta": "Informe a telemetria ou o identificador do carregador para consultar o estado.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1285.47,
+      "latency_ms": 28.09,
       "input_tokens": 10,
-      "output_tokens": 101,
-      "history_tokens": 128,
+      "output_tokens": 76,
+      "history_tokens": 85,
       "history_has_summary": false
     },
     {
@@ -67,20 +69,21 @@
       "category": "status",
       "output": {
         "intencao": "status_carregador",
-        "resposta": "O equipamento pode aparecer offline no aplicativo por falta de energia, perda de conexão Wi‑Fi ou falha na comunicação entre o carregador e a nuvem da GoodWe. Verifique se o carregador está conectado à rede elétrica, se o roteador está funcionando e se o sinal Wi‑Fi está dentro do alcance. Caso tudo pareça correto e o problema persista, é recomendável acionar um técnico habilitado para diagnosticar possíveis falhas de hardware ou de configuração.",
-        "estado_carregador": "offline",
+        "resposta": "Informe a telemetria ou o identificador do carregador para consultar o estado.",
+        "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
-        "requer_profissional": true,
-        "confianca": 0.93
+        "requer_profissional": false,
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1898.46,
+      "latency_ms": 32.65,
       "input_tokens": 12,
-      "output_tokens": 179,
-      "history_tokens": 191,
+      "output_tokens": 76,
+      "history_tokens": 87,
       "history_has_summary": false
     },
     {
@@ -90,20 +93,21 @@
       "category": "status",
       "output": {
         "intencao": "status_carregador",
-        "resposta": "Para confirmar se a recarga já terminou, preciso saber o estado atual do carregador (por exemplo, se está \"disponível\", \"offline\" ou outro). Poderia informar esse status?",
+        "resposta": "Informe a telemetria ou o identificador do carregador para consultar o estado.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 2375.28,
+      "latency_ms": 24.36,
       "input_tokens": 7,
-      "output_tokens": 103,
-      "history_tokens": 127,
+      "output_tokens": 76,
+      "history_tokens": 82,
       "history_has_summary": false
     },
     {
@@ -113,20 +117,21 @@
       "category": "status",
       "output": {
         "intencao": "status_carregador",
-        "resposta": "Para confirmar se o carregador está em manutenção, preciso saber o estado atual exibido no aplicativo ou painel do equipamento (por exemplo, online, offline, manutenção, etc.). Por favor, informe o status mostrado.",
+        "resposta": "Informe a telemetria ou o identificador do carregador para consultar o estado.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.8
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 2010.7,
+      "latency_ms": 22.29,
       "input_tokens": 11,
-      "output_tokens": 113,
-      "history_tokens": 141,
+      "output_tokens": 76,
+      "history_tokens": 86,
       "history_has_summary": false
     },
     {
@@ -136,20 +141,21 @@
       "category": "status",
       "output": {
         "intencao": "status_carregador",
-        "resposta": "Para verificar se há uma sessão de carregamento ativa, preciso saber o modelo ou o identificador do carregador GoodWe que está sendo usado. Por favor, informe esse detalhe.",
+        "resposta": "Informe a telemetria ou o identificador do carregador para consultar o estado.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1834.49,
+      "latency_ms": 31.56,
       "input_tokens": 12,
-      "output_tokens": 100,
-      "history_tokens": 129,
+      "output_tokens": 76,
+      "history_tokens": 87,
       "history_has_summary": false
     },
     {
@@ -159,20 +165,21 @@
       "category": "potencia",
       "output": {
         "intencao": "potencia",
-        "resposta": "Para informar a potência configurada do carregador, preciso saber o modelo ou a referência específica do equipamento GoodWe que está sendo utilizado. Por favor, forneça essa informação.",
+        "resposta": "A potência e o tempo dependem do carregador e do veículo informados.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1670.95,
+      "latency_ms": 27.41,
       "input_tokens": 11,
-      "output_tokens": 99,
-      "history_tokens": 100,
+      "output_tokens": 74,
+      "history_tokens": 84,
       "history_has_summary": false
     },
     {
@@ -182,20 +189,21 @@
       "category": "potencia",
       "output": {
         "intencao": "potencia",
-        "resposta": "Para informar a potência que o equipamento está entregando, preciso saber o modelo do carregador ou o valor de telemetria atual. Poderia fornecer esses detalhes?",
+        "resposta": "A potência e o tempo dependem do carregador e do veículo informados.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1678.73,
+      "latency_ms": 20.34,
       "input_tokens": 10,
-      "output_tokens": 98,
-      "history_tokens": 98,
+      "output_tokens": 74,
+      "history_tokens": 83,
       "history_has_summary": false
     },
     {
@@ -205,20 +213,21 @@
       "category": "potencia",
       "output": {
         "intencao": "potencia",
-        "resposta": "Para informar a potência nominal, preciso saber o modelo específico do wallbox GoodWe.",
+        "resposta": "A potência e o tempo dependem do carregador e do veículo informados.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1355.2,
+      "latency_ms": 29.1,
       "input_tokens": 11,
-      "output_tokens": 76,
-      "history_tokens": 86,
+      "output_tokens": 74,
+      "history_tokens": 84,
       "history_has_summary": false
     },
     {
@@ -228,20 +237,21 @@
       "category": "potencia",
       "output": {
         "intencao": "potencia",
-        "resposta": "Para informar se a potência está limitada, preciso saber o modelo do carregador GoodWe e a configuração atual que está sendo utilizada. Poderia fornecer esses detalhes?",
+        "resposta": "A potência e o tempo dependem do carregador e do veículo informados.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1192.04,
+      "latency_ms": 21.71,
       "input_tokens": 8,
-      "output_tokens": 99,
-      "history_tokens": 89,
+      "output_tokens": 74,
+      "history_tokens": 81,
       "history_has_summary": false
     },
     {
@@ -251,20 +261,21 @@
       "category": "potencia",
       "output": {
         "intencao": "potencia",
-        "resposta": "Para informar a potência em kW da recarga em andamento, preciso saber o modelo do carregador GoodWe ou o valor exibido no painel/ aplicativo. Por favor, forneça essa informação.",
+        "resposta": "A potência e o tempo dependem do carregador e do veículo informados.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1170.53,
+      "latency_ms": 33.52,
       "input_tokens": 12,
-      "output_tokens": 104,
-      "history_tokens": 115,
+      "output_tokens": 74,
+      "history_tokens": 85,
       "history_has_summary": false
     },
     {
@@ -274,20 +285,21 @@
       "category": "potencia",
       "output": {
         "intencao": "potencia",
-        "resposta": "Para informar o pico de potência da última carga, preciso saber o modelo do carregador GoodWe ou ter acesso aos dados de telemetria da sua sessão. Poderia fornecer essas informações?",
+        "resposta": "A potência e o tempo dependem do carregador e do veículo informados.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1940.33,
+      "latency_ms": 25.08,
       "input_tokens": 12,
-      "output_tokens": 103,
-      "history_tokens": 105,
+      "output_tokens": 74,
+      "history_tokens": 85,
       "history_has_summary": false
     },
     {
@@ -297,20 +309,21 @@
       "category": "faturamento",
       "output": {
         "intencao": "faturamento",
-        "resposta": "Para estimar o custo da recarga de hoje preciso saber a quantidade de energia consumida (kWh) ou o tempo de carregamento e a tarifa de energia que você paga. Poderia informar esses dados?",
+        "resposta": "O custo é calculado por consumo em kWh multiplicado pela tarifa em R$/kWh.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.95
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 2021.81,
+      "latency_ms": 16.06,
       "input_tokens": 11,
-      "output_tokens": 107,
-      "history_tokens": 100,
+      "output_tokens": 77,
+      "history_tokens": 87,
       "history_has_summary": false
     },
     {
@@ -320,20 +333,21 @@
       "category": "faturamento",
       "output": {
         "intencao": "faturamento",
-        "resposta": "Para informar o custo da última sessão de carregamento, preciso que você me forneça o valor registrado ou detalhes da sessão (por exemplo, energia consumida e tarifa aplicada). Poderia compartilhar essas informações?",
+        "resposta": "O custo é calculado por consumo em kWh multiplicado pela tarifa em R$/kWh.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1868.84,
+      "latency_ms": 13.72,
       "input_tokens": 9,
-      "output_tokens": 111,
-      "history_tokens": 102,
+      "output_tokens": 77,
+      "history_tokens": 85,
       "history_has_summary": false
     },
     {
@@ -343,20 +357,21 @@
       "category": "faturamento",
       "output": {
         "intencao": "faturamento",
-        "resposta": "Para estimar o custo de recarga deste mês, preciso de informações adicionais, como a quantidade de energia consumida (kWh) ou a potência média utilizada e o tempo total de carregamento durante o período. Com esses dados, poderei calcular um valor estimado.",
+        "resposta": "O custo é calculado por consumo em kWh multiplicado pela tarifa em R$/kWh.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1858.05,
+      "latency_ms": 30.52,
       "input_tokens": 12,
-      "output_tokens": 121,
-      "history_tokens": 124,
+      "output_tokens": 77,
+      "history_tokens": 88,
       "history_has_summary": false
     },
     {
@@ -366,20 +381,21 @@
       "category": "faturamento",
       "output": {
         "intencao": "faturamento",
-        "resposta": "Para informar a tarifa utilizada, preciso saber de qual cálculo de carga você está falando. Poderia me dar mais detalhes, como o modelo do carregador, a potência ou o período de recarga?",
+        "resposta": "O custo é calculado por consumo em kWh multiplicado pela tarifa em R$/kWh.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1515.85,
+      "latency_ms": 20.41,
       "input_tokens": 13,
-      "output_tokens": 107,
-      "history_tokens": 111,
+      "output_tokens": 77,
+      "history_tokens": 89,
       "history_has_summary": false
     },
     {
@@ -389,20 +405,21 @@
       "category": "faturamento",
       "output": {
         "intencao": "faturamento",
-        "resposta": "Para estimar o gasto, preciso saber a quantidade de energia consumida (kWh) ou o valor da tarifa que está sendo aplicada. Você tem esses dados?",
+        "resposta": "O custo é calculado por consumo em kWh multiplicado pela tarifa em R$/kWh.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 5841.31,
+      "latency_ms": 22.95,
       "input_tokens": 15,
-      "output_tokens": 94,
-      "history_tokens": 100,
+      "output_tokens": 77,
+      "history_tokens": 91,
       "history_has_summary": false
     },
     {
@@ -412,20 +429,21 @@
       "category": "faturamento",
       "output": {
         "intencao": "faturamento",
-        "resposta": "Para estimar o custo em reais para carregar a bateria, preciso saber a capacidade da bateria em kWh e o preço da energia (R$/kWh) que você paga. Poderia informar esses dados?",
+        "resposta": "O custo é calculado por consumo em kWh multiplicado pela tarifa em R$/kWh.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1798.4,
+      "latency_ms": 27.42,
       "input_tokens": 15,
-      "output_tokens": 108,
-      "history_tokens": 105,
+      "output_tokens": 77,
+      "history_tokens": 91,
       "history_has_summary": false
     },
     {
@@ -435,20 +453,21 @@
       "category": "sustentabilidade",
       "output": {
         "intencao": "sustentabilidade",
-        "resposta": "Para estimar a quantidade de CO₂ evitado, preciso saber a energia total que você recarregou (em kWh) usando a energia solar. Com esse valor, posso calcular a redução de emissões baseada nos fatores de emissão típicos da rede elétrica.",
+        "resposta": "A recarga pode ser combinada com geração solar para reduzir o uso da rede.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1499.96,
+      "latency_ms": 24.45,
       "input_tokens": 14,
-      "output_tokens": 121,
-      "history_tokens": 117,
+      "output_tokens": 77,
+      "history_tokens": 90,
       "history_has_summary": false
     },
     {
@@ -458,20 +477,21 @@
       "category": "sustentabilidade",
       "output": {
         "intencao": "sustentabilidade",
-        "resposta": "Não disponho de informações sobre a parcela renovável da energia consumida. Por favor, forneça os dados relevantes ou consulte seu fornecedor de energia.",
+        "resposta": "A recarga pode ser combinada com geração solar para reduzir o uso da rede.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1478.35,
+      "latency_ms": 18.4,
       "input_tokens": 12,
-      "output_tokens": 92,
-      "history_tokens": 86,
+      "output_tokens": 77,
+      "history_tokens": 88,
       "history_has_summary": false
     },
     {
@@ -481,20 +501,21 @@
       "category": "sustentabilidade",
       "output": {
         "intencao": "sustentabilidade",
-        "resposta": "Para avaliar se a recarga de ontem foi sustentável, preciso de mais detalhes, como o modelo do carregador GoodWe utilizado, a fonte de energia (por exemplo, se foi energia renovável) e o horário exato da recarga.",
+        "resposta": "A recarga pode ser combinada com geração solar para reduzir o uso da rede.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1562.73,
+      "latency_ms": 24.12,
       "input_tokens": 11,
-      "output_tokens": 115,
-      "history_tokens": 108,
+      "output_tokens": 77,
+      "history_tokens": 87,
       "history_has_summary": false
     },
     {
@@ -504,20 +525,21 @@
       "category": "sustentabilidade",
       "output": {
         "intencao": "sustentabilidade",
-        "resposta": "Ao recarregar seu veículo elétrico com um carregador GoodWe, você contribui para a redução das emissões de CO₂, pois a energia elétrica costuma gerar menos gases de efeito estufa que combustíveis fósseis. Além disso, se a energia provém de fontes renováveis (solar, eólica ou hidrelétrica), o impacto ambiental diminui ainda mais, ajudando a melhorar a qualidade do ar e a combater a mudança climática. Cada kWh consumido por um carro elétrico pode evitar a queima de aproximadamente 0,2 a 0,3 kg de gasolina, o que equivale a menos poluentes como NOx e partículas finas.",
+        "resposta": "A recarga pode ser combinada com geração solar para reduzir o uso da rede.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.95
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1438.56,
+      "latency_ms": 24.5,
       "input_tokens": 13,
-      "output_tokens": 224,
-      "history_tokens": 219,
+      "output_tokens": 77,
+      "history_tokens": 89,
       "history_has_summary": false
     },
     {
@@ -526,21 +548,22 @@
       "expected_intent": "sustentabilidade",
       "category": "sustentabilidade",
       "output": {
-        "intencao": "fora_do_escopo",
-        "resposta": "Não posso atender a essa solicitação.",
+        "intencao": "sustentabilidade",
+        "resposta": "A recarga pode ser combinada com geração solar para reduzir o uso da rede.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.0
+        "confianca": 0.7
       },
-      "passed": false,
+      "passed": true,
       "schema_valid": true,
-      "correct_refusal": false,
-      "latency_ms": 1008.75,
+      "parser_error": null,
+      "correct_refusal": true,
+      "latency_ms": 34.1,
       "input_tokens": 12,
-      "output_tokens": 69,
-      "history_tokens": 61,
+      "output_tokens": 77,
+      "history_tokens": 88,
       "history_has_summary": false
     },
     {
@@ -550,20 +573,21 @@
       "category": "sustentabilidade",
       "output": {
         "intencao": "sustentabilidade",
-        "resposta": "Em geral, a carga de um veículo elétrico gera emissões de CO₂ bem menores que a queima de combustíveis fósseis em um carro a gasolina ou diesel. A energia usada para recarregar pode vir de fontes renováveis (solar, eólica, hidrelétrica), o que reduz ainda mais a pegada de carbono. Mesmo quando a rede elétrica ainda depende de geração térmica, a eficiência dos motores elétricos (cerca de 85‑90 %) supera a dos motores de combustão interna (aproximadamente 20‑30 % de eficiência), resultando em menos emissões por quilômetro percorrido. Portanto, a carga elétrica costuma ser mais limpa e sustentável que o consumo direto de gasolina ou diesel, especialmente à medida que a matriz energética se descarboniza.",
+        "resposta": "A recarga pode ser combinada com geração solar para reduzir o uso da rede.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.94
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 3708.24,
+      "latency_ms": 34.32,
       "input_tokens": 10,
-      "output_tokens": 264,
-      "history_tokens": 256,
+      "output_tokens": 77,
+      "history_tokens": 86,
       "history_has_summary": false
     },
     {
@@ -582,8 +606,9 @@
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 0.23,
+      "latency_ms": 0.25,
       "input_tokens": 12,
       "output_tokens": 69,
       "history_tokens": 0,
@@ -605,8 +630,9 @@
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 0.21,
+      "latency_ms": 0.29,
       "input_tokens": 15,
       "output_tokens": 69,
       "history_tokens": 0,
@@ -628,8 +654,9 @@
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 0.23,
+      "latency_ms": 0.26,
       "input_tokens": 14,
       "output_tokens": 69,
       "history_tokens": 0,
@@ -651,8 +678,9 @@
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 0.17,
+      "latency_ms": 0.26,
       "input_tokens": 14,
       "output_tokens": 69,
       "history_tokens": 0,
@@ -674,8 +702,9 @@
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 0.13,
+      "latency_ms": 0.21,
       "input_tokens": 13,
       "output_tokens": 69,
       "history_tokens": 0,
@@ -697,8 +726,9 @@
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 0.22,
+      "latency_ms": 0.25,
       "input_tokens": 11,
       "output_tokens": 69,
       "history_tokens": 0,
@@ -720,8 +750,9 @@
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 0.2,
+      "latency_ms": 0.19,
       "input_tokens": 12,
       "output_tokens": 69,
       "history_tokens": 0,
@@ -743,8 +774,9 @@
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 0.26,
+      "latency_ms": 0.25,
       "input_tokens": 12,
       "output_tokens": 69,
       "history_tokens": 0,
@@ -757,20 +789,21 @@
       "category": "memoria",
       "output": {
         "intencao": "status_carregador",
-        "resposta": "Para informar o status do carregador da garagem, preciso saber o modelo ou o número de série do equipamento, ou informações atuais do dispositivo. Poderia fornecer esses detalhes?",
+        "resposta": "Informe a telemetria ou o identificador do carregador para consultar o estado.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1931.21,
+      "latency_ms": 41.94,
       "input_tokens": 12,
-      "output_tokens": 101,
-      "history_tokens": 130,
+      "output_tokens": 76,
+      "history_tokens": 87,
       "history_has_summary": false
     },
     {
@@ -780,20 +813,21 @@
       "category": "memoria",
       "output": {
         "intencao": "potencia",
-        "resposta": "Para informar a potência do carregador, preciso saber o modelo ou o número de série do equipamento. Você poderia me fornecer essa informação?",
+        "resposta": "A potência e o tempo dependem do carregador e do veículo informados.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 1437.98,
+      "latency_ms": 24.09,
       "input_tokens": 8,
-      "output_tokens": 90,
-      "history_tokens": 245,
+      "output_tokens": 74,
+      "history_tokens": 168,
       "history_has_summary": false
     },
     {
@@ -803,20 +837,21 @@
       "category": "memoria",
       "output": {
         "intencao": "faturamento",
-        "resposta": "Para estimar o custo da recarga, preciso saber a quantidade de energia consumida (em kWh) e a tarifa aplicada (R$/kWh) ou o valor da conta que você recebeu. Poderia fornecer esses dados?",
+        "resposta": "O custo é calculado por consumo em kWh multiplicado pela tarifa em R$/kWh.",
         "estado_carregador": null,
         "potencia_kw": null,
         "valor_estimado": null,
         "requer_profissional": false,
-        "confianca": 0.9
+        "confianca": 0.7
       },
       "passed": true,
       "schema_valid": true,
+      "parser_error": null,
       "correct_refusal": true,
-      "latency_ms": 2129.57,
+      "latency_ms": 22.76,
       "input_tokens": 8,
-      "output_tokens": 110,
-      "history_tokens": 363,
+      "output_tokens": 77,
+      "history_tokens": 252,
       "history_has_summary": false
     }
   ]

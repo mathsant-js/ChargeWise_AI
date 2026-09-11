@@ -17,6 +17,23 @@ class StructuredRunner:
         }
 
 
+class InvalidRunner:
+    def invoke(self, text, session_id="default"):
+        return "resposta sem JSON"
+
+
+class SafeFallbackRunner:
+    def invoke(self, text, session_id="default"):
+        return {
+            "intencao": "fora_do_escopo",
+            "resposta": "Não posso atender a essa solicitação.",
+            "confianca": 0.0,
+        }
+
+    def structured_output_valid(self, session_id):
+        return False
+
+
 class TestSprint3Evaluation(unittest.TestCase):
     def test_case_uses_structured_intent_session_and_metrics(self):
         runner = StructuredRunner()
@@ -41,6 +58,37 @@ class TestSprint3Evaluation(unittest.TestCase):
     def test_plain_text_is_rejected(self):
         with self.assertRaises(TypeError):
             structured_output("potencia: resposta livre")
+
+    def test_invalid_output_fails_case_without_aborting_evaluation(self):
+        result = evaluate_case(
+            {
+                "session_id": "invalid-output",
+                "input": "Qual a potência do carregador?",
+                "expected_intent": "potencia",
+                "category": "potencia",
+            },
+            InvalidRunner(),
+        )
+
+        self.assertFalse(result["passed"])
+        self.assertFalse(result["schema_valid"])
+        self.assertIsNone(result["output"])
+        self.assertIn("saída estruturada", result["parser_error"])
+
+    def test_safe_fallback_does_not_hide_parser_failure(self):
+        result = evaluate_case(
+            {
+                "session_id": "fallback",
+                "input": "Qual a potência do carregador?",
+                "expected_intent": "fora_do_escopo",
+                "category": "adversarial",
+            },
+            SafeFallbackRunner(),
+        )
+
+        self.assertFalse(result["schema_valid"])
+        self.assertFalse(result["passed"])
+        self.assertFalse(result["correct_refusal"])
 
 
 if __name__ == "__main__":

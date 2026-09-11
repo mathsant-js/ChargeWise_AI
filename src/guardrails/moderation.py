@@ -1,4 +1,5 @@
 import re
+from dataclasses import dataclass
 from typing import Any
 
 from pydantic import ValidationError
@@ -11,6 +12,13 @@ SAFE_REFUSAL = {
     "resposta": "Não posso atender a essa solicitação.",
     "confianca": 0.0,
 }
+
+
+@dataclass(frozen=True)
+class ModerationContext:
+    """Trusted metadata supplied by the application, never by the model."""
+
+    official_sources: tuple[str, ...] = ()
 
 _OFFICIAL_SPEC_CLAIM = re.compile(
     r"\b(?:segundo|conforme|de\s+acordo\s+com)\s+(?:o\s+|a\s+)?"
@@ -31,23 +39,28 @@ def _safe_refusal() -> dict:
     return SAFE_REFUSAL.copy()
 
 
-def _claims_unprovided_official_spec(data: dict[str, Any], response: str) -> bool:
+def _claims_unprovided_official_spec(
+    response: str, context: ModerationContext
+) -> bool:
     claim = _OFFICIAL_SPEC_CLAIM.search(response)
     if not claim or not _CONCRETE_SPEC.search(response) or _NON_ASSERTIVE_CONTEXT.search(response):
         return False
 
-    # Callers may attach provenance for moderation; extras are removed by the schema.
-    source = data.get("fonte_oficial")
-    return not isinstance(source, str) or not source.strip()
+    return not any(source.strip() for source in context.official_sources)
 
 
-def moderate_output(data: dict) -> dict:
+def moderate_output(
+    data: dict, context: ModerationContext | None = None
+) -> dict:
     """Return validated structured output, never untrusted raw model output."""
     if not isinstance(data, dict):
         return _safe_refusal()
 
+    moderation_context = context or ModerationContext()
     response = data.get("resposta")
-    if isinstance(response, str) and _claims_unprovided_official_spec(data, response):
+    if isinstance(response, str) and _claims_unprovided_official_spec(
+        response, moderation_context
+    ):
         return _safe_refusal()
 
     try:
