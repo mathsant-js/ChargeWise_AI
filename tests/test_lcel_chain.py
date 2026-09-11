@@ -4,6 +4,7 @@ import unittest
 from typing import ClassVar
 
 from langchain_core.language_models.fake_chat_models import FakeListChatModel
+from langchain_core.runnables.history import RunnableWithMessageHistory
 
 from src.chain import builder
 
@@ -51,7 +52,7 @@ def build_with_fake(fake, history_limit=None):
 
 
 def invoke(chain, text, thread_id):
-    """Support wrapper-style and LangGraph/Runnable-style final APIs."""
+    """Support wrapper-style and Runnable-style final APIs."""
     parameters = inspect.signature(chain.invoke).parameters
     if "thread_id" in parameters:
         return chain.invoke(text, thread_id=thread_id)
@@ -85,7 +86,13 @@ class TestStructuredParser(unittest.TestCase):
         self.assertEqual(parsed["confianca"], 0.0)
 
 
-class TestGraphMemoryContract(unittest.TestCase):
+class TestLCELMemoryContract(unittest.TestCase):
+    def test_chain_uses_runnable_with_message_history(self):
+        fake = RecordingFakeChatModel(responses=[valid_response()])
+        chain = builder.create_chain(fake)
+
+        self.assertIsInstance(chain.first, RunnableWithMessageHistory)
+
     def test_three_turns_are_available_to_the_model(self):
         RecordingFakeChatModel.reset_calls()
         fake = RecordingFakeChatModel(responses=[valid_response()] * 3)

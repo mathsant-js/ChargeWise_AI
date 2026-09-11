@@ -23,7 +23,7 @@ flowchart TD
 | Interface de entrada | Receber mensagem + `session_id` | CLI / interface existente |
 | Guardrail de entrada | Detectar jailbreak, injection e fora‑de‑escopo | Python |
 | Gerenciador de contexto | Montar prompt, histórico e regras de domínio | XML tagging |
-| Memória | Conversas isoladas por sessão, controle de tokens | Checkpointer `InMemorySaver` do LangGraph |
+| Memória | Conversas isoladas por sessão, controle de tokens | `RunnableWithMessageHistory` + `ConversationTokenBufferMemory` |
 | Chain principal (LCEL) | Orquestrar prompt → modelo → parser | LangChain LCEL |
 | Modelo | Gerar resposta | **ChatOllama** (gpt‑oss:120b) |
 | Structured output (parser) | Validar resposta conforme domínio | Pydantic v2 |
@@ -36,7 +36,7 @@ flowchart TD
    - Dentro do domínio GoodWe → prossegue.
    - Fora do escopo, jailbreak, jurídico, ou risco elétrico → recusa padronizada.
 3. **Construção do prompt** – `builder.py` carrega a versão do *system prompt* (XML) e cria `ChatPromptTemplate`.
-4. **Histórico** – O checkpointer do LangGraph injeta o histórico da sessão, identificado por `thread_id`, com limite configurável de tokens.
+4. **Histórico** – `RunnableWithMessageHistory` injeta o histórico da sessão, identificado por `session_id`, com limite configurável de tokens.
 5. **Modelo** – `ChatOllama` gera a resposta.
 6. **Parsing** – Pydantic v2 valida a saída contra `ConsultaRecarga`.
 7. **Fallback** – Caso a validação falhe, retorna recusa segura (sem dados inventados).
@@ -79,28 +79,28 @@ ChargeGrid-Intelligence/
 └── README.md
 ```
 
-## 4. Chain LangGraph com componentes LCEL
-A cadeia preserva componentes LCEL para prompt e modelo dentro de um `StateGraph` persistente.
+## 4. Chain LCEL
+A cadeia usa composição LCEL para conectar prompt, modelo e moderação da saída.
 - **builder.py**
   - Carrega a versão escolhida do *system prompt*.
   - Configura `ChatPromptTemplate`.
   - Instancia `ChatOllama`.
   - Conecta ao parser Pydantic.
-  - Compila o grafo com `InMemorySaver`, evitando a API depreciada `RunnableWithMessageHistory`.
+  - Encapsula a composição com `RunnableWithMessageHistory`.
   - Recebe parâmetros como modelo, temperature, top_p e max_tokens.
 
 ```python
 response = chatbot.invoke(
     {"input": mensagem},
-    config={"configurable": {"thread_id": session_id}}
+    config={"configurable": {"session_id": session_id}}
 )
 ```
 
 ## 5. Memória conversacional
-- A implementação migrou para persistência nativa do LangGraph porque `RunnableWithMessageHistory` foi depreciado no `langchain-core` 1.3.3.
+- Cada sessão usa `ConversationTokenBufferMemory` como gerenciador de memória e um histórico em memória limitado por tokens.
 - Cada `session_id` tem seu próprio histórico.
 - O histórico respeita um limite configurável de tokens.
-- Mensagens antigas são resumidas ou descartadas ao exceder o limite.
+- Mensagens antigas são descartadas ao exceder o limite.
 - Nunca misturar históricos de usuários diferentes.
 - Registro aproximado de tokens usando `tiktoken`.
 

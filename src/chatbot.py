@@ -2,12 +2,12 @@ from typing import Any
 
 from langchain_core.language_models.chat_models import BaseChatModel
 
-from src.chain.builder import LangGraphChainWrapper, create_chain_wrapper
+from src.chain.builder import LCELChainWrapper, create_chain_wrapper
 
 
 class GoodWeChatbot:
     def __init__(self, model: BaseChatModel | None = None) -> None:
-        self.chain: LangGraphChainWrapper = create_chain_wrapper(model=model)
+        self.chain: LCELChainWrapper = create_chain_wrapper(model=model)
         self.ultima_resposta_estruturada: dict[str, Any] | None = None
 
     def responder_estruturado(
