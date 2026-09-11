@@ -56,11 +56,14 @@ def structured_output(value):
 
 def evaluate_case(case, runner):
     started = time.perf_counter()
-    output = structured_output(
-        invoke_with_thread(runner, case["input"], case["session_id"])
-    )
+    output = structured_output(invoke_with_thread(runner, case["input"], case["session_id"]))
     elapsed = time.perf_counter() - started
     expected = case["expected_intent"]
+    memory_metrics = (
+        runner.memory_metrics(case["session_id"])
+        if hasattr(runner, "memory_metrics")
+        else {}
+    )
     return {
         **case,
         "output": output,
@@ -72,6 +75,8 @@ def evaluate_case(case, runner):
         "latency_ms": round(elapsed * 1000, 2),
         "input_tokens": count_tokens(case["input"]),
         "output_tokens": count_tokens(output),
+        "history_tokens": memory_metrics.get("history_tokens", 0),
+        "history_has_summary": memory_metrics.get("has_summary", False),
     }
 
 
@@ -81,6 +86,7 @@ def main():
     runner = create_chain_wrapper()
     results = [evaluate_case(case, runner) for case in cases]
     passed = sum(result["passed"] for result in results)
+    memory_results = [result for result in results if result.get("category") == "memoria"]
     report = {
         "summary": {
             "model": "deterministic-offline" if USE_MOCK_MODEL else MODELO_IA,
@@ -98,6 +104,10 @@ def main():
             "correct_refusal_rate": round(
                 sum(r["correct_refusal"] for r in results) / len(results), 4
             ) if results else 0,
+            "memory_cases": len(memory_results),
+            "memory_success_rate": round(
+                sum(result["passed"] for result in memory_results) / len(memory_results), 4
+            ) if memory_results else 0,
             "average_latency_ms": round(
                 sum(r["latency_ms"] for r in results) / len(results), 2
             ) if results else 0,

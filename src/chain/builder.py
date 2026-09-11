@@ -1,9 +1,6 @@
 import os
 from typing import Any
 
-import tiktoken
-from langchain.memory import ConversationTokenBufferMemory
-from langchain_core.chat_history import InMemoryChatMessageHistory
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.output_parsers import PydanticOutputParser
@@ -26,6 +23,13 @@ from src.config import (
 from src.guardrails.moderation import moderate_output
 from src.guardrails.scope_validator import validate_scope
 from src.schemas.consulta_recarga import ConsultaRecarga
+from src.chain.memoria import (
+    SessionMemoryStore,
+    count_message_tokens,
+    count_text_tokens,
+    trim_history,
+    truncate_text,
+)
 
 
 def _load_system_prompt() -> str:
@@ -42,7 +46,6 @@ def _load_system_prompt() -> str:
 
 
 parser = PydanticOutputParser(pydantic_object=ConsultaRecarga)
-_tokenizer = tiktoken.get_encoding("cl100k_base")
 
 
 class DeterministicChatModel(BaseChatModel):
@@ -85,36 +88,6 @@ class DeterministicChatModel(BaseChatModel):
         return ChatResult(generations=[ChatGeneration(message=AIMessage(content=content))])
 
 
-def _message_tokens(message: BaseMessage) -> int:
-    return len(_tokenizer.encode(str(message.content))) + 4
-
-
-def _trim_messages(messages: list[BaseMessage], token_limit: int) -> list[BaseMessage]:
-    selected: list[BaseMessage] = []
-    used = 0
-    for message in reversed(messages):
-        token_count = _message_tokens(message)
-        if not selected and token_count > token_limit:
-            tokens = _tokenizer.encode(str(message.content))[-max(1, token_limit - 4) :]
-            selected.append(message.model_copy(update={"content": _tokenizer.decode(tokens)}))
-            break
-        if used + token_count > token_limit:
-            break
-        selected.append(message)
-        used += token_count
-    return list(reversed(selected))
-
-
-class TokenBufferChatMessageHistory(InMemoryChatMessageHistory):
-    """In-memory history that enforces the configured token budget on every write."""
-
-    token_limit: int
-
-    def add_messages(self, messages: list[BaseMessage]) -> None:
-        super().add_messages(messages)
-        self.messages = _trim_messages(self.messages, self.token_limit)
-
-
 def robust_parse_and_moderate(llm_output: BaseMessage) -> dict[str, Any]:
     """Parse structured JSON and always apply post-model moderation."""
     raw_text = str(llm_output.content)
@@ -145,6 +118,7 @@ def create_chain(
     model: BaseChatModel | None = None,
     history_limit: int = MESSAGE_TOKEN_LIMIT,
     max_output_tokens: int = MAX_OUTPUT_TOKENS,
+    memory_store: SessionMemoryStore | None = None,
 ):
     """Build the LCEL chain with isolated, token-bounded session history."""
     chat_model = model or _create_model()
@@ -158,33 +132,32 @@ def create_chain(
         ]
     ).partial(format_instructions=format_instructions)
 
-    fixed_tokens = len(_tokenizer.encode(system_prompt + format_instructions))
-    history_budget = max(1, history_limit - max_output_tokens - fixed_tokens)
-    memories: dict[str, ConversationTokenBufferMemory] = {}
-
-    def get_session_history(session_id: str) -> InMemoryChatMessageHistory:
-        if session_id not in memories:
-            chat_history = TokenBufferChatMessageHistory(token_limit=history_budget)
-            memories[session_id] = ConversationTokenBufferMemory(
-                llm=chat_model,
-                chat_memory=chat_history,
-                return_messages=True,
-                max_token_limit=history_budget,
-            )
-        return memories[session_id].chat_memory
+    fixed_tokens = count_text_tokens(system_prompt + format_instructions)
+    history_budget = history_limit - max_output_tokens - fixed_tokens
+    if history_budget < 1:
+        raise ValueError("MESSAGE_TOKEN_LIMIT é insuficiente para o prompt e a saída reservada.")
+    store = memory_store or SessionMemoryStore(chat_model, history_budget)
 
     def bounded_history(values: dict[str, Any]) -> list[BaseMessage]:
-        input_tokens = _message_tokens(HumanMessage(content=str(values["input"])))
-        return _trim_messages(values.get("history", []), max(1, history_budget - input_tokens))
+        bounded_input = truncate_text(str(values["input"]), max(1, history_budget - 4))
+        input_tokens = count_message_tokens(HumanMessage(content=bounded_input))
+        available = max(0, history_budget - input_tokens)
+        return trim_history(values.get("history", []), available)
+
+    def bounded_input(values: dict[str, Any]) -> str:
+        return truncate_text(str(values["input"]), max(1, history_budget - 4))
 
     model_chain = (
-        RunnablePassthrough.assign(history=RunnableLambda(bounded_history))
+        RunnablePassthrough.assign(
+            history=RunnableLambda(bounded_history),
+            input=RunnableLambda(bounded_input),
+        )
         | prompt
         | chat_model
     )
     with_history = RunnableWithMessageHistory(
         model_chain,
-        get_session_history,
+        store.get_session_history,
         input_messages_key="input",
         history_messages_key="history",
     )
@@ -196,8 +169,19 @@ class LCELChainWrapper:
         self,
         model: BaseChatModel | None = None,
         history_limit: int = MESSAGE_TOKEN_LIMIT,
+        max_output_tokens: int = MAX_OUTPUT_TOKENS,
     ) -> None:
-        self.chain = create_chain(model=model, history_limit=history_limit)
+        chat_model = model or _create_model()
+        system_prompt = _load_system_prompt()
+        fixed_tokens = count_text_tokens(system_prompt + parser.get_format_instructions())
+        memory_limit = history_limit - max_output_tokens - fixed_tokens
+        self.memory_store = SessionMemoryStore(chat_model, memory_limit)
+        self.chain = create_chain(
+            model=chat_model,
+            history_limit=history_limit,
+            max_output_tokens=max_output_tokens,
+            memory_store=self.memory_store,
+        )
 
     def invoke(self, user_input: str, session_id: str = "default") -> dict[str, Any]:
         if not validate_scope(user_input):
@@ -212,9 +196,20 @@ class LCELChainWrapper:
             config={"configurable": {"session_id": session_id}},
         )
 
+    def clear_session(self, session_id: str) -> None:
+        self.memory_store.clear(session_id)
+
+    def memory_metrics(self, session_id: str) -> dict[str, Any]:
+        return self.memory_store.metrics(session_id)
+
 
 def create_chain_wrapper(
     model: BaseChatModel | None = None,
     history_limit: int = MESSAGE_TOKEN_LIMIT,
+    max_output_tokens: int = MAX_OUTPUT_TOKENS,
 ) -> LCELChainWrapper:
-    return LCELChainWrapper(model=model, history_limit=history_limit)
+    return LCELChainWrapper(
+        model=model,
+        history_limit=history_limit,
+        max_output_tokens=max_output_tokens,
+    )

@@ -9,7 +9,9 @@
     "average_tokens_per_case": 85.97,
     "structured_accuracy": 1.0,
     "correct_refusal_rate": 1.0,
-    "average_latency_ms": 13.79
+    "memory_cases": 3,
+    "memory_success_rate": 1.0,
+    "average_latency_ms": 14.9
   },
   "results": [
     {
@@ -29,9 +31,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 25.1,
+      "latency_ms": 40.24,
       "input_tokens": 12,
-      "output_tokens": 76
+      "output_tokens": 76,
+      "history_tokens": 87,
+      "history_has_summary": false
     },
     {
       "session_id": "status-02",
@@ -50,9 +54,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 29.74,
+      "latency_ms": 16.61,
       "input_tokens": 10,
-      "output_tokens": 76
+      "output_tokens": 76,
+      "history_tokens": 85,
+      "history_has_summary": false
     },
     {
       "session_id": "status-03",
@@ -71,9 +77,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 20.95,
+      "latency_ms": 21.07,
       "input_tokens": 12,
-      "output_tokens": 76
+      "output_tokens": 76,
+      "history_tokens": 87,
+      "history_has_summary": false
     },
     {
       "session_id": "status-04",
@@ -92,9 +100,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 13.78,
+      "latency_ms": 17.54,
       "input_tokens": 7,
-      "output_tokens": 76
+      "output_tokens": 76,
+      "history_tokens": 82,
+      "history_has_summary": false
     },
     {
       "session_id": "status-05",
@@ -113,9 +123,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 10.79,
+      "latency_ms": 18.31,
       "input_tokens": 11,
-      "output_tokens": 76
+      "output_tokens": 76,
+      "history_tokens": 86,
+      "history_has_summary": false
     },
     {
       "session_id": "status-06",
@@ -134,9 +146,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 16.78,
+      "latency_ms": 17.14,
       "input_tokens": 12,
-      "output_tokens": 76
+      "output_tokens": 76,
+      "history_tokens": 87,
+      "history_has_summary": false
     },
     {
       "session_id": "power-01",
@@ -155,9 +169,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 14.79,
+      "latency_ms": 16.86,
       "input_tokens": 11,
-      "output_tokens": 74
+      "output_tokens": 74,
+      "history_tokens": 84,
+      "history_has_summary": false
     },
     {
       "session_id": "power-02",
@@ -176,9 +192,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 14.21,
+      "latency_ms": 19.55,
       "input_tokens": 10,
-      "output_tokens": 74
+      "output_tokens": 74,
+      "history_tokens": 83,
+      "history_has_summary": false
     },
     {
       "session_id": "power-03",
@@ -197,9 +215,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 24.49,
+      "latency_ms": 18.22,
       "input_tokens": 11,
-      "output_tokens": 74
+      "output_tokens": 74,
+      "history_tokens": 84,
+      "history_has_summary": false
     },
     {
       "session_id": "power-04",
@@ -218,9 +238,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 14.89,
+      "latency_ms": 22.41,
       "input_tokens": 8,
-      "output_tokens": 74
+      "output_tokens": 74,
+      "history_tokens": 81,
+      "history_has_summary": false
     },
     {
       "session_id": "power-05",
@@ -239,9 +261,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 13.42,
+      "latency_ms": 20.13,
       "input_tokens": 12,
-      "output_tokens": 74
+      "output_tokens": 74,
+      "history_tokens": 85,
+      "history_has_summary": false
     },
     {
       "session_id": "power-06",
@@ -260,9 +284,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 15.74,
+      "latency_ms": 16.83,
       "input_tokens": 12,
-      "output_tokens": 74
+      "output_tokens": 74,
+      "history_tokens": 85,
+      "history_has_summary": false
     },
     {
       "session_id": "billing-01",
@@ -281,9 +307,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 19.04,
+      "latency_ms": 16.05,
       "input_tokens": 11,
-      "output_tokens": 77
+      "output_tokens": 77,
+      "history_tokens": 87,
+      "history_has_summary": false
     },
     {
       "session_id": "billing-02",
@@ -302,9 +330,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 17.22,
+      "latency_ms": 23.09,
       "input_tokens": 9,
-      "output_tokens": 77
+      "output_tokens": 77,
+      "history_tokens": 85,
+      "history_has_summary": false
     },
     {
       "session_id": "billing-03",
@@ -323,9 +353,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 14.46,
+      "latency_ms": 19.6,
       "input_tokens": 12,
-      "output_tokens": 77
+      "output_tokens": 77,
+      "history_tokens": 88,
+      "history_has_summary": false
     },
     {
       "session_id": "billing-04",
@@ -344,9 +376,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 21.67,
+      "latency_ms": 14.45,
       "input_tokens": 13,
-      "output_tokens": 77
+      "output_tokens": 77,
+      "history_tokens": 89,
+      "history_has_summary": false
     },
     {
       "session_id": "billing-05",
@@ -365,9 +399,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 21.17,
+      "latency_ms": 15.71,
       "input_tokens": 15,
-      "output_tokens": 77
+      "output_tokens": 77,
+      "history_tokens": 91,
+      "history_has_summary": false
     },
     {
       "session_id": "billing-06",
@@ -386,9 +422,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 14.11,
+      "latency_ms": 19.2,
       "input_tokens": 15,
-      "output_tokens": 77
+      "output_tokens": 77,
+      "history_tokens": 91,
+      "history_has_summary": false
     },
     {
       "session_id": "green-01",
@@ -407,9 +445,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 19.75,
+      "latency_ms": 18.5,
       "input_tokens": 14,
-      "output_tokens": 77
+      "output_tokens": 77,
+      "history_tokens": 90,
+      "history_has_summary": false
     },
     {
       "session_id": "green-02",
@@ -428,9 +468,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 17.86,
+      "latency_ms": 14.85,
       "input_tokens": 12,
-      "output_tokens": 77
+      "output_tokens": 77,
+      "history_tokens": 88,
+      "history_has_summary": false
     },
     {
       "session_id": "green-03",
@@ -449,9 +491,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 17.7,
+      "latency_ms": 22.43,
       "input_tokens": 11,
-      "output_tokens": 77
+      "output_tokens": 77,
+      "history_tokens": 87,
+      "history_has_summary": false
     },
     {
       "session_id": "green-04",
@@ -470,9 +514,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 19.58,
+      "latency_ms": 19.28,
       "input_tokens": 13,
-      "output_tokens": 77
+      "output_tokens": 77,
+      "history_tokens": 89,
+      "history_has_summary": false
     },
     {
       "session_id": "green-05",
@@ -491,9 +537,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 14.23,
+      "latency_ms": 12.87,
       "input_tokens": 12,
-      "output_tokens": 77
+      "output_tokens": 77,
+      "history_tokens": 88,
+      "history_has_summary": false
     },
     {
       "session_id": "green-06",
@@ -512,9 +560,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 20.57,
+      "latency_ms": 19.2,
       "input_tokens": 10,
-      "output_tokens": 77
+      "output_tokens": 77,
+      "history_tokens": 86,
+      "history_has_summary": false
     },
     {
       "session_id": "blocked-01",
@@ -533,9 +583,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 0.17,
+      "latency_ms": 0.27,
       "input_tokens": 12,
-      "output_tokens": 69
+      "output_tokens": 69,
+      "history_tokens": 0,
+      "history_has_summary": false
     },
     {
       "session_id": "blocked-02",
@@ -554,9 +606,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 0.23,
+      "latency_ms": 0.35,
       "input_tokens": 15,
-      "output_tokens": 69
+      "output_tokens": 69,
+      "history_tokens": 0,
+      "history_has_summary": false
     },
     {
       "session_id": "blocked-03",
@@ -575,9 +629,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 0.19,
+      "latency_ms": 0.32,
       "input_tokens": 14,
-      "output_tokens": 69
+      "output_tokens": 69,
+      "history_tokens": 0,
+      "history_has_summary": false
     },
     {
       "session_id": "blocked-04",
@@ -596,9 +652,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 0.18,
+      "latency_ms": 0.32,
       "input_tokens": 14,
-      "output_tokens": 69
+      "output_tokens": 69,
+      "history_tokens": 0,
+      "history_has_summary": false
     },
     {
       "session_id": "blocked-05",
@@ -617,9 +675,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 0.21,
+      "latency_ms": 0.25,
       "input_tokens": 13,
-      "output_tokens": 69
+      "output_tokens": 69,
+      "history_tokens": 0,
+      "history_has_summary": false
     },
     {
       "session_id": "blocked-06",
@@ -638,9 +698,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 0.23,
+      "latency_ms": 0.25,
       "input_tokens": 11,
-      "output_tokens": 69
+      "output_tokens": 69,
+      "history_tokens": 0,
+      "history_has_summary": false
     },
     {
       "session_id": "blocked-07",
@@ -659,9 +721,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 0.23,
+      "latency_ms": 0.24,
       "input_tokens": 12,
-      "output_tokens": 69
+      "output_tokens": 69,
+      "history_tokens": 0,
+      "history_has_summary": false
     },
     {
       "session_id": "blocked-08",
@@ -682,7 +746,9 @@
       "correct_refusal": true,
       "latency_ms": 0.3,
       "input_tokens": 12,
-      "output_tokens": 69
+      "output_tokens": 69,
+      "history_tokens": 0,
+      "history_has_summary": false
     },
     {
       "session_id": "memory-01",
@@ -701,9 +767,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 17.16,
+      "latency_ms": 20.33,
       "input_tokens": 12,
-      "output_tokens": 76
+      "output_tokens": 76,
+      "history_tokens": 87,
+      "history_has_summary": false
     },
     {
       "session_id": "memory-01",
@@ -722,9 +790,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 14.39,
+      "latency_ms": 14.8,
       "input_tokens": 8,
-      "output_tokens": 74
+      "output_tokens": 74,
+      "history_tokens": 168,
+      "history_has_summary": false
     },
     {
       "session_id": "memory-01",
@@ -743,9 +813,11 @@
       "passed": true,
       "schema_valid": true,
       "correct_refusal": true,
-      "latency_ms": 17.33,
+      "latency_ms": 23.94,
       "input_tokens": 8,
-      "output_tokens": 77
+      "output_tokens": 77,
+      "history_tokens": 252,
+      "history_has_summary": false
     }
   ]
 }

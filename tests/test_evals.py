@@ -35,6 +35,7 @@ class TestSprint3Evaluation(unittest.TestCase):
         self.assertEqual(runner.sessions, ["eval-thread"])
         self.assertGreater(result["input_tokens"], 0)
         self.assertGreater(result["output_tokens"], 0)
+        self.assertEqual(result["history_tokens"], 0)
         self.assertGreaterEqual(result["latency_ms"], 0)
 
     def test_plain_text_is_rejected(self):

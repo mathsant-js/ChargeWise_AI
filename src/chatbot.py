@@ -20,3 +20,6 @@ class GoodWeChatbot:
     def responder(self, pergunta: str, session_id: str = "default") -> str:
         result = self.responder_estruturado(pergunta, session_id=session_id)
         return str(result.get("resposta", "Não consegui processar sua solicitação."))
+
+    def limpar_sessao(self, session_id: str = "default") -> None:
+        self.chain.clear_session(session_id)

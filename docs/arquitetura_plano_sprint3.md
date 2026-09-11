@@ -100,7 +100,9 @@ response = chatbot.invoke(
 - Cada sessão usa `ConversationTokenBufferMemory` como gerenciador de memória e um histórico em memória limitado por tokens.
 - Cada `session_id` tem seu próprio histórico.
 - O histórico respeita um limite configurável de tokens.
-- Mensagens antigas são descartadas ao exceder o limite.
+- Turnos antigos são convertidos em um resumo determinístico e extrativo ao exceder o limite.
+- O resumo preserva frases com identificadores, valores, potência, tarifa e estado sem realizar outra chamada ao modelo.
+- Turnos recentes são mantidos como pares completos de usuário e assistente.
 - Nunca misturar históricos de usuários diferentes.
 - Registro aproximado de tokens usando `tiktoken`.
 

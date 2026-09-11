@@ -96,6 +96,10 @@ Bibliotecas principais:
 ```bash
 ollama
 python-dotenv
+langchain
+langchain-ollama
+pydantic
+tiktoken
 ```
 
 <br>
@@ -183,6 +187,8 @@ O histórico da conversa é armazenado e reenviado ao modelo a cada interação.
 
 Isso permite responder perguntas dependentes de contexto.
 
+Cada conversa é isolada por `session_id`. O histórico recente é mantido em pares completos e, quando o limite de tokens é atingido, os turnos antigos são convertidos em um resumo determinístico e extrativo, sem chamada adicional ao modelo.
+
 Exemplo:
 
 ```text
@@ -239,10 +245,14 @@ ChargeWise_AI/
 ├── tests/
 │   └── resultados_testes.md
 │
-├── system_prompt.txt
-├── config.py
-├── chatbot.py
-├── app.py
+├── prompts/
+├── src/
+│   ├── chain/
+│   │   ├── builder.py
+│   │   └── memoria.py
+│   ├── chatbot.py
+│   ├── config.py
+│   └── main.py
 ├── requirements.txt
 ├── .env.example
 └── README.md
@@ -292,6 +302,8 @@ Crie um arquivo `.env` na raiz do projeto:
 
 ```env
 OLLAMA_API_KEY=sua_chave_aqui
+OLLAMA_HOST=https://ollama.com
+OLLAMA_MODEL=gpt-oss:120b
 ```
 
 <br>
@@ -299,7 +311,7 @@ OLLAMA_API_KEY=sua_chave_aqui
 # ▶️ Executando o Projeto
 
 ```bash
-python app.py
+python -m src.main
 ```
 
 <br>
