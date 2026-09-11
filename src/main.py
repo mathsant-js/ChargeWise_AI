@@ -5,12 +5,16 @@ It mirrors the behaviour of the original ``app.py`` but lives inside the
 ``docs/arquitetura_plano_sprint3.md``.
 """
 
-import sys
 import os
-import warnings
+# Disable LangChain tracing and telemetry before any other import
+os.environ["LANGCHAIN_TRACING_V2"] = "false"
+os.environ["LANGCHAIN_VERBOSE"] = "false"
 
-# Silencia avisos de depreciação do LangChain para manter a interface limpa
+import warnings
+# Filter only DeprecationWarnings to avoid silencing critical errors
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+import sys
 
 # Adiciona a raiz do projeto ao sys.path para resolver importações absolutas
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))

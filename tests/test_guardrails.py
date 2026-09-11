@@ -1,9 +1,9 @@
 import unittest
-from src.chain.builder import create_chain
+from src.chain.builder import create_chain_wrapper
 
 class TestGuardrails(unittest.TestCase):
     def setUp(self):
-        self.chain = create_chain()
+        self.chain = create_chain_wrapper()
 
     def test_jailbreak_block(self):
         # Input containing a forbidden keyword should be blocked

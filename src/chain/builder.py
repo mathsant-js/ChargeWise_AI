@@ -4,7 +4,7 @@ from typing import Any, Dict
 from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.chat_history import InMemoryChatMessageHistory
 from langchain_core.output_parsers import PydanticOutputParser
 
 from src.config import MODELO_IA
@@ -29,8 +29,31 @@ store = {}
 
 def get_session_history(session_id: str):
     if session_id not in store:
-        store[session_id] = ChatMessageHistory()
+        store[session_id] = InMemoryChatMessageHistory()
     return store[session_id]
+
+# Define parser globally to be used by robust_parse_and_moderate and create_chain
+parser = PydanticOutputParser(pydantic_object=ConsultaRecarga)
+
+def robust_parse_and_moderate(llm_output):
+    """
+    Tries to parse the LLM output as JSON using the Pydantic parser.
+    If parsing fails, it treats the output as plain text and passes it to moderation.
+    """
+    # llm_output is a BaseMessage (from ChatOllama)
+    raw_text = llm_output.content
+    
+    try:
+        # Attempt to parse as structured JSON
+        parsed_obj = parser.parse(raw_text)
+        # If successful, we validate via moderation
+        result = moderate_output(parsed_obj.model_dump())
+    except Exception:
+        # If parsing fails (plain text or bad JSON), we treat it as a raw response
+        # and let the moderation guardrail handle it.
+        result = moderate_output({"resposta": raw_text})
+    
+    return result
 
 def create_chain():
     """
@@ -41,13 +64,12 @@ def create_chain():
     
     # 1. Define the prompt template
     prompt = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),
+        ("system", system_prompt + "\n\n{format_instructions}"),
         MessagesPlaceholder(variable_name="history"),
         ("human", "{input}"),
     ])
-
+    
     # 2. Initialize the model
-    # Use the centralized MODELO_IA, OLLAMA_HOST and OLLAMA_HEADERS from config.py
     from src.config import MODELO_IA, OLLAMA_HOST, OLLAMA_HEADERS
     llm = ChatOllama(
         model=MODELO_IA, 
@@ -55,48 +77,30 @@ def create_chain():
         headers=OLLAMA_HEADERS,
         temperature=0.2
     )
-
-    # 3. Structured output parser
-    parser = PydanticOutputParser(pydantic_object=ConsultaRecarga)
     
+    # 3. Structured output parser (already defined globally)
     # We instruct the model to output JSON by adding formatting instructions to the prompt
     prompt = prompt.partial(format_instructions=parser.get_format_instructions())
-    # Add format instructions to the system message for better compliance
-    # (Simplified here; in production, we'd merge them into the system prompt)
     
     # 4. Build the LCEL chain
-    # Instead of a direct pipe to the parser which can crash on invalid JSON,
-    # we create a robust parsing and moderation function.
-    
-    def robust_parse_and_moderate(llm_output):
-        """
-        Tries to parse the LLM output as JSON using the Pydantic parser.
-        If parsing fails, it treats the output as plain text and passes it to moderation.
-        """
-        # llm_output is a BaseMessage (from ChatOllama)
-        raw_text = llm_output.content
-        
-        try:
-            # Attempt to parse as structured JSON
-            parsed_obj = parser.parse(raw_text)
-            # If successful, we validate via moderation
-            return moderate_output(parsed_obj.model_dump())
-        except Exception:
-            # If parsing fails (plain text or bad JSON), we treat it as a raw response
-            # and let the moderation guardrail handle it.
-            return moderate_output({"resposta": raw_text})
-
     from langchain_core.runnables import RunnableLambda
-    # Final Chain: Prompt -> LLM -> Robust Parsing & Moderation
-    full_chain = prompt | llm | RunnableLambda(robust_parse_and_moderate)
-
+    
     # 5. Add Message History
-    return RunnableWithMessageHistory(
-        full_chain,
+    # WE MUST wrap only (prompt | llm) with history so that the output is a BaseMessage.
+    # This prevents the RootListenersTracer from crashing on the final structured dict.
+    model_chain = prompt | llm
+    
+    chain_with_history = RunnableWithMessageHistory(
+        model_chain,
         get_session_history,
         input_messages_key="input",
         history_messages_key="history",
     )
+    
+    # Final Chain: Prompt + LLM (with history) -> Robust Parsing & Moderation
+    full_chain = chain_with_history | RunnableLambda(robust_parse_and_moderate)
+    
+    return full_chain
 
 class LCELChainWrapper:
     """
@@ -116,11 +120,11 @@ class LCELChainWrapper:
             }
         
         # Invoke the LangChain LCEL chain
+        # Pass an empty list of callbacks to suppress the RootListenersTracer and other telemetry
         return self.chain.invoke(
             {"input": user_input},
-            config={"configurable": {"session_id": session_id}}
+            config={"configurable": {"session_id": session_id}, "callbacks": []}
         )
 
 def create_chain_wrapper():
     return LCELChainWrapper()
-
