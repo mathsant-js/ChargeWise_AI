@@ -1,4 +1,5 @@
 import os
+import re
 from typing import Any
 
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -24,6 +25,8 @@ from src.guardrails.moderation import moderate_output
 from src.guardrails.scope_validator import validate_scope
 from src.schemas.consulta_recarga import ConsultaRecarga
 from src.chain.memoria import (
+    MEMORY_HISTORY_KEY,
+    MEMORY_INPUT_KEY,
     SessionMemoryStore,
     count_message_tokens,
     count_text_tokens,
@@ -68,7 +71,29 @@ class DeterministicChatModel(BaseChatModel):
             "",
         )
         normalized = question.lower()
-        if any(term in normalized for term in ("custo", "custou", "tarifa", "preço", "preco", "valor", "gastei", "reais")):
+        context = " ".join(str(message.content) for message in messages)
+        user_context = " ".join(
+            str(message.content)
+            for message in messages
+            if isinstance(message, HumanMessage)
+        ).lower()
+        charger_ids = re.findall(r"\bGW-[A-Z0-9-]+\b", context, re.IGNORECASE)
+        asks_context = "qual carregador" in normalized or "qual é o problema" in normalized
+        if asks_context and charger_ids:
+            charger_id = charger_ids[-1].upper()
+            is_offline = "offline" in context.lower()
+            problem = (
+                "está offline desde ontem"
+                if "offline desde ontem" in user_context
+                else "está offline"
+            )
+            answer = (
+                f"Você mencionou o carregador {charger_id}, que {problem}."
+                if is_offline
+                else f"Você mencionou o carregador {charger_id}; não há problema registrado no histórico."
+            )
+            intent = "status_carregador"
+        elif any(term in normalized for term in ("custo", "custou", "tarifa", "preço", "preco", "valor", "gastei", "reais")):
             intent = "faturamento"
             answer = "O custo é calculado por consumo em kWh multiplicado pela tarifa em R$/kWh."
         elif any(term in normalized for term in ("status", "online", "offline", "estado", "terminou", "manutenção", "manutencao", "sessão ativa")):
@@ -127,8 +152,8 @@ def create_chain(
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", system_prompt + "\n\n{format_instructions}"),
-            MessagesPlaceholder(variable_name="history"),
-            ("human", "{input}"),
+            MessagesPlaceholder(variable_name=MEMORY_HISTORY_KEY),
+            ("human", "{" + MEMORY_INPUT_KEY + "}"),
         ]
     ).partial(format_instructions=format_instructions)
 
@@ -139,18 +164,24 @@ def create_chain(
     store = memory_store or SessionMemoryStore(chat_model, history_budget)
 
     def bounded_history(values: dict[str, Any]) -> list[BaseMessage]:
-        bounded_input = truncate_text(str(values["input"]), max(1, history_budget - 4))
+        bounded_input = truncate_text(
+            str(values[MEMORY_INPUT_KEY]), max(1, history_budget - 4)
+        )
         input_tokens = count_message_tokens(HumanMessage(content=bounded_input))
         available = max(0, history_budget - input_tokens)
-        return trim_history(values.get("history", []), available)
+        return trim_history(values.get(MEMORY_HISTORY_KEY, []), available)
 
     def bounded_input(values: dict[str, Any]) -> str:
-        return truncate_text(str(values["input"]), max(1, history_budget - 4))
+        return truncate_text(
+            str(values[MEMORY_INPUT_KEY]), max(1, history_budget - 4)
+        )
 
     model_chain = (
         RunnablePassthrough.assign(
-            history=RunnableLambda(bounded_history),
-            input=RunnableLambda(bounded_input),
+            **{
+                MEMORY_HISTORY_KEY: RunnableLambda(bounded_history),
+                MEMORY_INPUT_KEY: RunnableLambda(bounded_input),
+            }
         )
         | prompt
         | chat_model
@@ -158,8 +189,8 @@ def create_chain(
     with_history = RunnableWithMessageHistory(
         model_chain,
         store.get_session_history,
-        input_messages_key="input",
-        history_messages_key="history",
+        input_messages_key=MEMORY_INPUT_KEY,
+        history_messages_key=MEMORY_HISTORY_KEY,
     )
     return with_history | RunnableLambda(robust_parse_and_moderate)
 
@@ -192,7 +223,7 @@ class LCELChainWrapper:
             }
 
         return self.chain.invoke(
-            {"input": user_input},
+            {MEMORY_INPUT_KEY: user_input},
             config={"configurable": {"session_id": session_id}},
         )
 

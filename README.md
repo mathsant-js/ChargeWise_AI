@@ -189,6 +189,10 @@ Isso permite responder perguntas dependentes de contexto.
 
 Cada conversa é isolada por `session_id`. O histórico recente é mantido em pares completos e, quando o limite de tokens é atingido, os turnos antigos são convertidos em um resumo determinístico e extrativo, sem chamada adicional ao modelo.
 
+A implementação usa `RunnableWithMessageHistory` com a chave de entrada `input` e a chave de histórico `history`. Cada sessão possui uma `ConversationTokenBufferMemory`; o orçamento total é definido por `MESSAGE_TOKEN_LIMIT` (padrão: 4096), com reserva para o system prompt e `OLLAMA_MAX_OUTPUT_TOKENS`. A contabilização local usa o tokenizador `cl100k_base`, enquanto a instância do modelo configurado em `OLLAMA_MODEL` é fornecida ao buffer exigido pelo LangChain.
+
+Quando o orçamento é excedido, fatos dos turnos antigos são preservados em um resumo extrativo e os turnos recentes permanecem completos. Uma mensagem individual maior que o orçamento é truncada antes de chegar ao modelo; esse trade-off impede estouro de contexto, mas pode descartar o fim da mensagem. A memória é mantida apenas em processo para esta Sprint: reiniciar a aplicação apaga todas as sessões. Persistência entre reinícios exigiria um armazenamento externo.
+
 Exemplo:
 
 ```text

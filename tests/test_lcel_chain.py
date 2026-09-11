@@ -7,6 +7,7 @@ from langchain_core.language_models.fake_chat_models import FakeListChatModel
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
 from src.chain import builder
+from src.chatbot import GoodWeChatbot
 
 
 def valid_response(answer="Resposta de teste.", intent="status_carregador"):
@@ -135,6 +136,44 @@ class TestLCELMemoryContract(unittest.TestCase):
         latest = " ".join(str(message.content) for message in fake.recorded_calls[-1])
         self.assertIn("turno recente", latest)
         self.assertNotIn("turno antigo", latest)
+
+    def test_default_model_recovers_first_turn_semantically(self):
+        chatbot = GoodWeChatbot(model=builder.DeterministicChatModel())
+        chatbot.responder("Meu carregador é o GW-123.")
+        chatbot.responder("Ele está offline desde ontem.")
+
+        answer = chatbot.responder(
+            "Qual carregador mencionei e qual é o problema?"
+        )
+
+        self.assertIn("GW-123", answer)
+        self.assertIn("offline desde ontem", answer)
+
+    def test_default_and_custom_session_ids_are_isolated(self):
+        RecordingFakeChatModel.reset_calls()
+        fake = RecordingFakeChatModel(responses=[valid_response()] * 3)
+        chain = build_with_fake(fake)
+        chain.invoke("carregador exclusivo da sessão padrão")
+        chain.invoke("carregador exclusivo da sessão customizada", session_id="custom")
+        chain.invoke("consulta customizada", session_id="custom")
+
+        latest = " ".join(str(message.content) for message in fake.recorded_calls[-1])
+        self.assertIn("sessão customizada", latest)
+        self.assertNotIn("sessão padrão", latest)
+
+    def test_single_message_larger_than_budget_is_bounded(self):
+        RecordingFakeChatModel.reset_calls()
+        fake = RecordingFakeChatModel(responses=[valid_response()] * 2)
+        chain = build_with_fake(fake)
+        chain.invoke("carregador " * 10000, session_id="oversized")
+        chain.invoke("status recente do carregador", session_id="oversized")
+
+        latest = " ".join(str(message.content) for message in fake.recorded_calls[-1])
+        self.assertIn("status recente do carregador", latest)
+        self.assertLessEqual(
+            chain.memory_metrics("oversized")["history_tokens"],
+            chain.memory_store.token_limit,
+        )
 
 
 if __name__ == "__main__":

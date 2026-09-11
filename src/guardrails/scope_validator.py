@@ -9,6 +9,7 @@ _DOMAIN_PATTERN = re.compile(
     r"inversor(?:es)?|equipamento|aplicativo|sess[aã]o\s+ativa|carga|kw|"
     r"fotovoltaic[oa]s?|energia\s+solar|energia\s+consumida|bateria(?:s)?|"
     r"pot[eê]ncia(?:\s+de\s+carga)?|tarifa|custo|custou|gastei|carregando|cobran[cç]a|reais|"
+    r"status|estado|online|offline|dispon[ií]vel|indispon[ií]vel|"
     r"renov[aá]vel|ambiental|emiss[aã]o|combust[ií]vel)\b",
     re.IGNORECASE,
 )

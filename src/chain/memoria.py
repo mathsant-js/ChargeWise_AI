@@ -8,7 +8,11 @@ from langchain_core.language_models import BaseLanguageModel
 from langchain_core.messages import BaseMessage, SystemMessage
 
 
-_tokenizer = tiktoken.get_encoding("cl100k_base")
+MEMORY_INPUT_KEY = "input"
+MEMORY_HISTORY_KEY = "history"
+TOKEN_COUNTING_MODEL = "cl100k_base"
+
+_tokenizer = tiktoken.get_encoding(TOKEN_COUNTING_MODEL)
 _SPACE = re.compile(r"\s+")
 _SENTENCE = re.compile(r"(?<=[.!?])\s+")
 _FACT = re.compile(
@@ -150,6 +154,8 @@ class SessionMemoryStore:
             self._memories[session_id] = ConversationTokenBufferMemory(
                 llm=self.llm,
                 chat_memory=history,
+                input_key=MEMORY_INPUT_KEY,
+                memory_key=MEMORY_HISTORY_KEY,
                 return_messages=True,
                 max_token_limit=self.token_limit,
             )
