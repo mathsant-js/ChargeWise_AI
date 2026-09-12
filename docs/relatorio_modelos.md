@@ -36,7 +36,7 @@ Médias das duas repetições:
 | Structured output válido | **98,57%** | 87,15% | 120b |
 | Recusas corretas | **100,00%** | 96,67% | 120b |
 | Encaminhamento profissional | 100,00% | 100,00% | Empate |
-| Memória contextual | 33,33% | 33,33% | Empate |
+| Memória contextual (execução real anterior à correção) | 33,33% | 33,33% | Empate |
 | Relevância em happy/edge cases | **96,67%** | 70,00% | 120b |
 | Tokens por chamada do modelo | **1.566,93** | 1.615,98 | 120b |
 | Latência média do modelo | **1.247,73 ms** | 3.381,32 ms | 120b |
@@ -62,7 +62,7 @@ O 120b variou somente 0,05 ponto de qualidade e não variou em intenção, recus
 - **Intenção**: igualdade exata entre `output.intencao` e `expected_intent` nos 35 casos.
 - **Structured output**: saída original do modelo validada pelo schema `ConsultaRecarga`; fallback seguro não mascara falha de parsing.
 - **Recusas**: correspondência com a recusa oficial definida pelo guardrail nos 15 casos fora de escopo, jailbreak e risco.
-- **Memória**: presença de todos os `memory_keywords` esperados nos três turnos de recuperação contextual avaliáveis.
+- **Memória**: presença de todos os `memory_keywords` esperados nos três turnos de recuperação contextual avaliáveis. Os números das tabelas são o snapshot real anterior à correção do guardrail.
 - **Tokens**: contagem reportada pelo provedor nas 19 chamadas; recusas locais têm zero token de modelo.
 - **Latência**: duração do provedor quando disponível, com relógio monotônico local como fallback.
 
@@ -86,7 +86,18 @@ Disponibilidade e limitações observadas:
 - A disponibilidade é um snapshot do contrato/endpoint e pode mudar.
 - Preços também podem mudar; o link e a data de consulta tornam a estimativa auditável.
 - A medição tem apenas duas repetições e 35 casos, adequada ao aceite desta fase, mas insuficiente para intervalos estatísticos robustos.
-- Memória permaneceu em 33,33% nos dois modelos. Esse resultado pede evolução específica de prompt/memória, sem evidência de vantagem entre modelos.
+- A memória permaneceu em 33,33% nos dois modelos durante as execuções reais originais. A investigação posterior mostrou que dois follow-ups eram bloqueados pelo guardrail antes da chamada ao modelo, e não perdidos pelo histórico.
+
+### Evolução da memória contextual
+
+| Etapa | Resultado | Evidência |
+|---|---:|---|
+| Sprint 01 | Não implementada | Fase de exploração e planejamento |
+| Sprint 02 | 66,67% automatizado | 3/3 recuperações semanticamente corretas; um falso negativo por hífen Unicode. O único cenário manual também foi aprovado |
+| Sprint 03, execução real inicial | 33,33% | Dois follow-ups pronominais bloqueados antes do modelo |
+| Sprint 03, após correção | **100,00% offline** | 3/3 recuperações; 100% chegaram ao modelo e 100% receberam histórico |
+
+A correção tornou o guardrail sensível a referências contextuais curtas, como “dele”, “ela” e “disso”, e normalizou hífens e espaços Unicode na métrica. Perguntas completas fora do domínio continuam bloqueadas. O resultado pós-correção é uma validação técnica determinística; as tabelas de comparação entre `gpt-oss:120b` e `gpt-oss:20b` não foram alteradas sem uma nova execução autenticada.
 - Latência de nuvem depende de carga, região e fila do plano; estes números representam esta janela de execução, não um SLA.
 
 ## Decisão

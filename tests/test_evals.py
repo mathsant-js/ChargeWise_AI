@@ -4,6 +4,7 @@ from pathlib import Path
 
 from evals.run_evals import (
     DATASET_PATH,
+    _normalize,
     evaluate_case,
     load_cases,
     structured_output,
@@ -87,6 +88,33 @@ class TestBeforeAfterEvaluation(unittest.TestCase):
         self.assertEqual(result["tokens"]["output"], 10)
         self.assertEqual(result["tokens"]["total"], 110)
 
+    def test_normalization_canonicalizes_unicode_hyphens_and_spaces(self):
+        self.assertEqual(_normalize("GW‑123"), _normalize("GW-123"))
+        self.assertEqual(_normalize("R$ 8,00"), _normalize("R$ 8,00"))
+
+    def test_memory_diagnostics_identify_guardrail_block(self):
+        class BlockedAdapter(StubAdapter):
+            def diagnostics(self, session_id):
+                return {
+                    "model_called": False,
+                    "estimated_history_tokens": 0,
+                    "provider_usage": {},
+                    "response_metadata": {},
+                }
+
+        case = load_cases()[14]
+        result = evaluate_case(case, BlockedAdapter(responses={
+            case["session_id"]: {
+                "intencao": "fora_do_escopo",
+                "resposta": "Solicitação recusada.",
+                "confianca": 0.0,
+            }
+        }))
+
+        self.assertFalse(result["memory_model_reached"])
+        self.assertFalse(result["memory_context_transmitted"])
+        self.assertEqual(result["memory_failure_reason"], "guardrail_block")
+
     def test_summary_separates_happy_refusal_and_memory(self):
         adapter = StubAdapter()
         cases = [load_cases()[0], load_cases()[10], load_cases()[20]]
@@ -95,6 +123,8 @@ class TestBeforeAfterEvaluation(unittest.TestCase):
         self.assertIn("happy_path_success_rate", summary)
         self.assertIn("refusal_rate", summary)
         self.assertIn("memory_success_rate", summary)
+        self.assertIn("memory_model_reached_rate", summary)
+        self.assertIn("memory_context_transmitted_rate", summary)
         self.assertGreaterEqual(summary["quality_0_10"], 0)
         self.assertLessEqual(summary["quality_0_10"], 10)
 

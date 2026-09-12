@@ -60,10 +60,19 @@ _DOMAIN_PATTERN = re.compile(
     r"renov[aá]vel|ambiental|emiss[aã]o|combust[ií]vel)\b",
     re.I,
 )
+_CONTEXTUAL_FOLLOWUP_PATTERN = re.compile(
+    r"^(?:e\s+)?(?:"
+    r"(?:qual|quais|quanto|quantos|quanta|quantas|como|quando|onde|por\s+que)\b.{0,120}"
+    r"\b(?:ele|ela|eles|elas|dele|dela|deles|delas|isso|disso|nisso|esse|essa|"
+    r"mencionad[oa]s?|anterior(?:es)?|mesmo)\b.{0,80}|"
+    r"se\b.{0,120}\b(?:isso|disso|nisso|metade)\b"
+    r")[?.!]*$",
+    re.I,
+)
 
 _JAILBREAK_PATTERNS = (
     re.compile(r"\b(?:jailbreak|prompt\s*injection|developer\s+mode|modo\s+desenvolvedor|dan\s+mode|bypass\s+(?:dos?\s+)?guardrails?)\b", re.I),
-    re.compile(r"\b(?:ignore|ignorar|ignora|desconsidere|esque[cç]a|forget|disregard|overlook|olvida|oublie[zr]?)\b.{0,100}\b(?:instru[cç][oõ]es|regras|prompt|rules?|instructions?|directives?|restri[cç][oõ]es)\b", re.I),
+    re.compile(r"\b(?:ignore|ignorar|ignora|desconsidere|esque[cç]a|forget|disregard|overlook|olvida|oublie[zr]?)\b.{0,100}\b(?:instru[cç][oõ]es|instrucciones|regras|reglas|prompt|rules?|instructions?|directives?|restri[cç][oõ]es)\b", re.I),
     re.compile(r"\b(?:revele|mostre|exiba|imprima|repita|vaze|transcreva|reveal|show|print|repeat|leak|traduz[air]|translate|qual\s+[eé])\b.{0,100}\b(?:prompt\s+(?:do\s+)?sistema|system\s*prompt|instru[cç][oõ]es\s+internas|hidden\s+instructions?|mensagem\s+de\s+sistema)\b", re.I),
     re.compile(r"\b(?:finja|imagine|simule|interprete|assuma|pretend|act\s+as|role[ -]?play|fa[cç]a\s+de\s+conta)\b.{0,120}\b(?:sem\s+regras|sem\s+restri[cç][oõ]es|desenvolvedor|administrador|dan|unrestricted|ignore|ignorar)\b", re.I),
     re.compile(r"\b(?:codifique|encode|base64|indiretamente|em\s+outras\s+palavras|pr[oó]ximo\s+turno)\b.{0,100}\b(?:prompt|regras|instru[cç][oõ]es|ignore|ignorar|revele|reveal)\b", re.I),
@@ -113,6 +122,11 @@ def validate_scope(user_input: str, conversation_context: str = "") -> ScopeDeci
         return ScopeDecision(False, BlockCategory.FINANCIAL, "aconselhamento_financeiro")
     if ELECTRICAL_ACTION_PATTERN.search(text) and DANGEROUS_COMPONENT_PATTERN.search(text):
         return ScopeDecision(False, BlockCategory.ELECTRICAL_SAFETY, "atividade_eletrica_perigosa")
-    if not _DOMAIN_PATTERN.search(text):
+    contextual_followup = (
+        bool(_DOMAIN_PATTERN.search(conversation_context))
+        and len(text.split()) <= 24
+        and bool(_CONTEXTUAL_FOLLOWUP_PATTERN.search(text))
+    )
+    if not _DOMAIN_PATTERN.search(text) and not contextual_followup:
         return ScopeDecision(False, BlockCategory.OUT_OF_SCOPE, "dominio_nao_reconhecido")
     return ScopeDecision(True)

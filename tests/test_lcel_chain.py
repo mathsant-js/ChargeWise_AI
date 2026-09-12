@@ -283,6 +283,26 @@ class TestLCELMemoryContract(unittest.TestCase):
         self.assertIn("GW-123", answer)
         self.assertIn("offline desde ontem", answer)
 
+    def test_default_model_resolves_pronoun_only_followups(self):
+        chatbot = GoodWeChatbot(model=builder.DeterministicChatModel())
+        chatbot.responder(
+            "Meu carregador é o GW-123 e está offline desde ontem.",
+            session_id="pronoun-status",
+        )
+        status = chatbot.responder(
+            "E qual é o problema dele?",
+            session_id="pronoun-status",
+        )
+
+        chatbot.responder(
+            "Use tarifa de R$ 0,80/kWh para minha recarga de 10 kWh.",
+            session_id="pronoun-cost",
+        )
+        cost = chatbot.responder("Quanto ela custa?", session_id="pronoun-cost")
+
+        self.assertIn("offline", status)
+        self.assertIn("8", cost)
+
     def test_default_and_custom_session_ids_are_isolated(self):
         RecordingFakeChatModel.reset_calls()
         fake = RecordingFakeChatModel(responses=[valid_response()] * 3)

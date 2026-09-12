@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Relatório de Evolução - Sprint 03</title>
+  <style>
+    @page { size: A4; margin: 1.45cm 1.55cm 1.35cm; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #17202a; font-family: Arial, sans-serif; font-size: 9pt; line-height: 1.16; }
+    .page-break { page-break-before: always; height: 0; }
+    .eyebrow { color: #17756f; font-size: 8.5pt; font-weight: bold; letter-spacing: 1.3px; text-transform: uppercase; }
+    h1 { color: #123c52; font-size: 23pt; line-height: 1.05; margin: 9px 0 5px; }
+    h2 { color: #123c52; font-size: 15pt; margin: 5px 0 6px; border-bottom: 2px solid #25a89e; padding-bottom: 3px; }
+    h3 { color: #17756f; font-size: 10.5pt; margin: 7px 0 3px; }
+    p { margin: 2px 0 5px; }
+    ul { margin: 2px 0 5px; padding-left: 16px; }
+    li { margin-bottom: 1px; }
+    .hero { background: #123c52; color: white; padding: 16px 20px 13px; margin-bottom: 9px; }
+    .hero h1 { color: white; margin-top: 5px; }
+    .hero .subtitle { color: #bce9e5; font-size: 12pt; }
+    .grid2 { display: table; width: 100%; border-spacing: 10px 0; margin-left: -10px; }
+    .col { display: table-cell; width: 50%; vertical-align: top; }
+    .card { border-left: 4px solid #25a89e; background: #edf7f6; padding: 6px 8px; margin: 4px 0 6px; }
+    .people { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font-size: 9.7pt; }
+    .people td { border-bottom: 1px solid #d4dce0; padding: 3px 5px; }
+    .people td:last-child { width: 20%; text-align: right; font-weight: bold; color: #123c52; }
+    table.metrics { width: 100%; border-collapse: collapse; margin: 7px 0; font-size: 9pt; }
+    .metrics th { background: #123c52; color: white; padding: 5px; text-align: left; }
+    .metrics th:not(:first-child), .metrics td:not(:first-child) { text-align: center; }
+    .metrics td { border-bottom: 1px solid #cbd5da; padding: 5px; }
+    .metrics tr:nth-child(even) td { background: #edf7f6; }
+    .flow { width: 100%; border-collapse: separate; border-spacing: 4px; margin: 11px 0; font-size: 8.5pt; }
+    .flow td { background: #123c52; color: white; text-align: center; padding: 8px 4px; vertical-align: middle; }
+    .flow .arrow { width: 2%; background: white; color: #25a89e; font-size: 14pt; padding: 0; }
+    .problem { border: 1px solid #cad7dc; border-top: 3px solid #25a89e; padding: 5px 7px; margin: 5px 0; }
+    .problem h3 { margin-top: 0; }
+    .label { color: #123c52; font-weight: bold; }
+    .note { color: #4d5d64; font-size: 8.7pt; }
+    .callout { background: #fff4d8; border-left: 4px solid #d69d22; padding: 6px 8px; margin: 5px 0; }
+    .kpis { width: 100%; border-collapse: separate; border-spacing: 6px; margin: 8px 0; }
+    .kpis td { background: #edf7f6; border: 1px solid #cce5e2; text-align: center; padding: 8px 4px; }
+    .kpis strong { display: block; color: #123c52; font-size: 14pt; }
+    .footer { border-top: 1px solid #cad7dc; margin-top: 7px; padding-top: 4px; color: #66757c; font-size: 8pt; text-align: right; }
+    .compact { font-size: 8.5pt; }
+  </style>
+</head>
+<body>
+  <section class="page">
+    <div class="hero">
+      <div class="eyebrow" style="color:#76d4cd">Prompt and Artificial Intelligence | Sprint 03</div>
+      <h1>ChargeWise AI</h1>
+      <div class="subtitle">Relatório de evolução do assistente para gestão de recarga de veículos elétricos em condomínios</div>
+    </div>
+
+    <div class="grid2">
+      <div class="col">
+        <h3>Identificação</h3>
+        <p><b>Curso:</b> Ciência da Computação</p>
+        <p><b>Turma:</b> 2º semestre (2SEM) | 2026.2</p>
+        <p><b>Disciplina:</b> Prompt and Artificial Intelligence</p>
+        <p><b>Professor:</b> Jorge Luiz Gomes</p>
+        <p><b>Parceiro:</b> GoodWe Brasil</p>
+      </div>
+      <div class="col">
+        <h3>Propósito</h3>
+        <div class="card">Apoiar moradores e gestores em consultas sobre carregadores GoodWe, status operacional, potência, faturamento e sustentabilidade, com respostas seguras e consistentes.</div>
+      </div>
+    </div>
+
+    <h3>Integrantes</h3>
+    <table class="people">
+      <tr><td>Bernardo Zauza Amorim</td><td>RM 568808</td></tr>
+      <tr><td>Bruno Almeida de Oliveira</td><td>RM 572648</td></tr>
+      <tr><td>Gabriel Góes Nunes Pereira</td><td>RM 571735</td></tr>
+      <tr><td>Guilherme Vinciguerra Carvalho</td><td>RM 571951</td></tr>
+      <tr><td>Marcos Peterson Martins Pereira</td><td>RM 573857</td></tr>
+      <tr><td>Matheus Jorge Santana</td><td>RM 574166</td></tr>
+    </table>
+
+    <div class="grid2">
+      <div class="col">
+        <h3>Resumo das Sprints 1/2</h3>
+        <p>A etapa inicial definiu escopo e identidade do assistente. A Sprint 2 entregou um chatbot funcional com prompt textual, contexto condominial e histórico mantido em uma lista Python. Seis cenários documentados foram considerados adequados, mas a solução ainda produzia texto livre, reenviava todo o histórico e dependia do próprio modelo para aplicar regras de segurança.</p>
+      </div>
+      <div class="col">
+        <h3>Objetivo da Sprint 03</h3>
+        <p>Evoluir a prova de conceito para uma arquitetura LCEL modular, com memória por sessão e limite de tokens, saída estruturada validada por Pydantic, guardrails antes e depois do modelo, prompts versionados e avaliação reproduzível de qualidade, custo e latência.</p>
+      </div>
+    </div>
+    <div class="footer">ChargeWise AI | Relatório de Evolução | 1/5</div>
+  </section>
+
+  <div class="page-break"></div>
+  <section class="page">
+    <div class="eyebrow">Arquitetura</div>
+    <h2>Refatoração para LCEL</h2>
+    <p>O fluxo monolítico das Sprints 1/2 foi substituído por componentes com responsabilidades explícitas. O <i>GoodWeChatbot</i> delega à cadeia LCEL; cada sessão recebe histórico próprio; o modelo é chamado apenas para solicitações permitidas; e toda saída passa por parsing e moderação.</p>
+
+    <table class="flow">
+      <tr>
+        <td>Entrada<br>+ session_id</td><td class="arrow">›</td>
+        <td>Guardrail<br>pré-modelo</td><td class="arrow">›</td>
+        <td>Prompt v3<br>+ memória</td><td class="arrow">›</td>
+        <td>Chain LCEL<br>+ ChatOllama</td><td class="arrow">›</td>
+        <td>Pydantic<br>+ moderação</td><td class="arrow">›</td>
+        <td>ConsultaRecarga<br>ou recusa segura</td>
+      </tr>
+    </table>
+    <p class="note">Solicitações fora de escopo, jailbreak, fraude ou risco elétrico são encerradas pelo guardrail local, sem consumir tokens do LLM.</p>
+
+    <div class="grid2">
+      <div class="col">
+        <h3>Decisões técnicas</h3>
+        <ul>
+          <li><b>LCEL:</b> composição declarativa com <i>ChatPromptTemplate</i>, <i>MessagesPlaceholder</i>, <i>RunnableLambda</i> e <i>RunnableWithMessageHistory</i>.</li>
+          <li><b>Schema Pydantic v2:</b> contrato único para intenção, resposta, estado, potência, valor, encaminhamento e confiança.</li>
+          <li><b>Memória por sessão:</b> limite de 4.096 tokens e resumo extrativo determinístico dos turnos antigos.</li>
+          <li><b>Defesa em camadas:</b> validação determinística antes do modelo e moderação após a geração.</li>
+          <li><b>Prompt v3:</b> tags XML, saída JSON e recusas oficiais por categoria.</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3>Trade-offs assumidos</h3>
+        <ul>
+          <li>Regex é rápida, previsível e barata, porém pode gerar falsos positivos ou não cobrir novas formulações.</li>
+          <li>Schema rígido aumenta confiabilidade de integração, mas uma resposta útil com JSON inválido precisa cair em fallback.</li>
+          <li>Resumo sem LLM não adiciona custo nem latência de modelo, mas pode eliminar nuances importantes.</li>
+          <li>Memória em processo simplifica a PoC, porém não persiste após reinício e não atende escalabilidade horizontal.</li>
+          <li>O 120B entrega maior qualidade; o 20B continua útil quando o custo tiver prioridade.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout"><b>Resultado arquitetural:</b> 15 dos 35 casos da avaliação foram recusados localmente. Assim, a Sprint 03 realizou somente 19 chamadas ao modelo, contra 35 no legado, reduzindo exposição, custo total e latência ponta a ponta.</div>
+    <div class="footer">ChargeWise AI | Relatório de Evolução | 2/5</div>
+  </section>
+
+  <div class="page-break"></div>
+  <section class="page">
+    <div class="eyebrow">Evidências quantitativas</div>
+    <h2>Comparação antes e depois</h2>
+    <p>A comparação canônica reexecutou legado e LCEL no mesmo dataset de 35 casos, com o modelo real <b>gpt-oss:120b</b>. O legado utilizou o prompt v1 e a Sprint 03, o prompt v3.</p>
+
+    <table class="metrics">
+      <tr><th>Métrica</th><th>Sprints 1/2</th><th>Sprint 03 LCEL</th></tr>
+      <tr><td><b>Qualidade média</b></td><td>7,09 / 10</td><td><b>8,97 / 10</b></td></tr>
+      <tr><td><b>Tokens por turno*</b></td><td>1.720,80</td><td><b>1.583,11</b></td></tr>
+      <tr><td><b>Latência média ponta a ponta</b></td><td>3.096,85 ms</td><td><b>892,33 ms</b></td></tr>
+      <tr><td><b>Structured output válido</b></td><td>0,00%</td><td><b>94,29%</b></td></tr>
+      <tr><td><b>Recusas corretas</b></td><td>66,67%</td><td><b>100,00%</b></td></tr>
+      <tr><td><b>Memória contextual</b></td><td>ver evolução abaixo</td><td><b>100,00% após correção</b></td></tr>
+    </table>
+    <p class="note">* O runner registra tokens por chamada ao modelo. Recusas locais da Sprint 03 usam zero token de modelo. “Sprints 1/2” representa a implementação legada reavaliada sob o protocolo controlado, não os seis testes manuais históricos.</p>
+
+    <h3>Evolução da memória contextual</h3>
+    <table class="metrics">
+      <tr><th>Sprint 01</th><th>Sprint 02</th><th>Sprint 03 inicial</th><th>Sprint 03 corrigida</th></tr>
+      <tr><td>Não implementada</td><td>66,67% automatizado*</td><td>33,33%</td><td><b>100,00%</b></td></tr>
+    </table>
+    <p class="note">* A Sprint 02 aprovou seu único cenário manual de memória. No protocolo automatizado posterior, recuperou semanticamente 3/3 referências, mas uma delas foi registrada como falha porque “GW‑123” usou hífen Unicode; por isso o artefato histórico mostra 66,67%. A Sprint 03 corrigida acertou 3/3 follow-ups na avaliação técnica offline: todos chegaram ao modelo e receberam o histórico. A comparação com modelos reais permanece como medição histórica até nova execução autenticada.</p>
+
+    <table class="kpis">
+      <tr>
+        <td><strong>+1,88</strong>pontos de qualidade</td>
+        <td><strong>−50,1%</strong>tokens totais<br>60.228 → 30.079</td>
+        <td><strong>35 → 19</strong>chamadas ao modelo</td>
+        <td><strong>100%</strong>encaminhamento profissional</td>
+      </tr>
+    </table>
+
+    <div class="grid2">
+      <div class="col">
+        <h3>Ganhos comprovados</h3>
+        <ul>
+          <li>Saída estruturada passou de inexistente para 94,29% de validade.</li>
+          <li>Recusas corretas cresceram 33,33 pontos percentuais.</li>
+          <li>Encaminhamento profissional subiu de 40% para 100%.</li>
+          <li>O bloqueio local reduziu em 45,7% as chamadas ao modelo.</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3>Regressões observadas</h3>
+        <ul>
+          <li>A regressão inicial de memória foi corrigida: 33,33% → 100,00% no teste offline.</li>
+          <li>Happy paths caíram de 86,67% para 80%.</li>
+          <li>Nas chamadas reais, a latência do modelo aumentou de 801,48 para 1.388,56 ms.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout"><b>Leitura correta:</b> a queda da latência ponta a ponta é explicada sobretudo pelas recusas locais quase imediatas. A memória não era perdida pelo buffer: follow-ups pronominais eram bloqueados antes do modelo. Após tornar o guardrail sensível ao contexto e corrigir a normalização da métrica, os três casos avaliáveis passaram.</div>
+    <div class="footer">ChargeWise AI | Relatório de Evolução | 3/5</div>
+  </section>
+
+  <div class="page-break"></div>
+  <section class="page">
+    <div class="eyebrow">Aprendizados</div>
+    <h2>Problemas, alternativas e decisões</h2>
+
+    <div class="problem">
+      <h3>1. Segurança dependente do comportamento probabilístico</h3>
+      <p><span class="label">Problema:</span> no legado, pedidos fora de escopo ou perigosos sempre chegavam ao modelo e dependiam da obediência ao prompt.</p>
+      <p><span class="label">Solução escolhida:</span> guardrail determinístico antes do LLM, com recusa específica para escopo, jailbreak, fraude, aconselhamento impróprio e risco elétrico; moderação posterior permanece como segunda barreira.</p>
+      <p><span class="label">Alternativas:</span> somente reforçar o system prompt; usar outro LLM como classificador; depender exclusivamente de moderação posterior.</p>
+      <p><span class="label">Motivo:</span> bloqueio local é auditável, tem baixa latência e custo zero de modelo. O resultado foi 100% de recusas corretas e 16 chamadas evitadas em relação ao legado.</p>
+    </div>
+
+    <div class="problem">
+      <h3>2. Histórico ilimitado e sem isolamento entre sessões</h3>
+      <p><span class="label">Problema:</span> a lista Python reenviava todo o histórico; o crescimento era ilimitado e uma instância não separava conversas por <i>session_id</i>.</p>
+      <p><span class="label">Solução escolhida:</span> <i>RunnableWithMessageHistory</i> e memória por sessão com orçamento de tokens, retenção de turnos recentes e resumo extrativo dos antigos.</p>
+      <p><span class="label">Alternativas:</span> truncamento simples; resumo por LLM; banco persistente; LangGraph, experimentado durante a migração.</p>
+      <p><span class="label">Motivo:</span> a investigação mostrou que o histórico permanecia disponível, mas o guardrail bloqueava “dele” e “ela” antes da chamada ao modelo. A validação passou a aceitar somente follow-ups curtos com referência explícita e contexto recente do domínio, preservando o bloqueio de solicitações não relacionadas. O resultado offline evoluiu de 33,33% para 100,00%.</p>
+    </div>
+
+    <div class="problem">
+      <h3>3. Texto livre sem contrato de integração</h3>
+      <p><span class="label">Problema:</span> respostas livres não garantiam campos, tipos ou coerência semântica para consumo por outros sistemas.</p>
+      <p><span class="label">Solução escolhida:</span> JSON compatível com <i>ConsultaRecarga</i>, validação Pydantic v2, proibição de campos extras e fallback seguro.</p>
+      <p><span class="label">Alternativas:</span> parsing por regex; JSON sem schema; aceitar correção silenciosa de qualquer saída.</p>
+      <p><span class="label">Motivo:</span> contrato explícito falha de forma segura e elevou a validade estrutural de 0% para 94,29%, embora respostas úteis malformadas possam ser descartadas.</p>
+    </div>
+
+    <div class="problem">
+      <h3>4. Modelo comparativo originalmente indisponível</h3>
+      <p><span class="label">Problema:</span> <i>qwen3:8b</i> não aparecia no endpoint autenticado em 12/09/2026.</p>
+      <p><span class="label">Solução escolhida:</span> usar <i>gpt-oss:20b</i>, disponível no mesmo endpoint, mantendo dataset e parâmetros iguais.</p>
+      <p><span class="label">Alternativas:</span> trocar de provedor; usar um mock; aguardar disponibilidade.</p>
+      <p><span class="label">Motivo:</span> priorizar uma comparação real e reproduzível, registrando a limitação em vez de simular resultados.</p>
+    </div>
+    <div class="footer">ChargeWise AI | Relatório de Evolução | 4/5</div>
+  </section>
+
+  <div class="page-break"></div>
+  <section class="page">
+    <div class="eyebrow">Síntese e continuidade</div>
+    <h2>Modelos, prompts e trabalho do grupo</h2>
+
+    <div class="grid2 compact">
+      <div class="col">
+        <h3>Comparação de modelos</h3>
+        <table class="metrics" style="font-size:8.8pt;margin-top:5px">
+          <tr><th>Métrica</th><th>120B</th><th>20B</th></tr>
+          <tr><td>Qualidade</td><td><b>9,52</b></td><td>8,37</td></tr>
+          <tr><td>Intenção</td><td><b>91,43%</b></td><td>77,14%</td></tr>
+          <tr><td>Structured output</td><td><b>98,57%</b></td><td>87,15%</td></tr>
+          <tr><td>Latência do modelo</td><td><b>1.247,73 ms</b></td><td>3.381,32 ms</td></tr>
+          <tr><td>Custo/repetição</td><td>US$ 0,00706</td><td><b>US$ 0,00370</b></td></tr>
+        </table>
+        <p>Foram feitas duas repetições de 35 casos por modelo. O <b>gpt-oss:120b</b> foi escolhido por qualidade, estabilidade e menor latência observada. O 20B, cerca de 47,5% mais barato, fica como contingência quando custo superar confiabilidade. A amostra é adequada ao exercício, mas não constitui SLA.</p>
+
+        <h3>Evolução dos prompts</h3>
+        <p><b>v1:</b> baseline textual extenso, regras e exemplos.</p>
+        <p><b>v2:</b> tags XML, escopo GoodWe/EV e contrato JSON.</p>
+        <p><b>v3:</b> defesa ampliada contra jailbreak, fraude e ataques indiretos; recusas oficiais e indicação de profissional.</p>
+        <p class="note">No ensaio offline determinístico, v3 usou 924,43 tokens/caso, 49,99% menos que v1. Como todas as versões atingiram 100% nesse mock, o ensaio comprova redução de tokens, não ganho real de qualidade.</p>
+      </div>
+
+      <div class="col">
+        <h3>Divisão do trabalho</h3>
+        <p>O grupo organizou a entrega nas seguintes frentes colaborativas:</p>
+        <ul>
+          <li>levantamento do domínio GoodWe e requisitos acadêmicos;</li>
+          <li>arquitetura LCEL, schema e integração do chatbot;</li>
+          <li>memória contextual e controle do orçamento de tokens;</li>
+          <li>guardrails, segurança e testes adversariais;</li>
+          <li>versionamento e avaliação dos prompts;</li>
+          <li>comparação de modelos, documentação e consolidação do relatório.</li>
+        </ul>
+        <p>A equipe completa é formada por Bernardo Zauza Amorim, Bruno Almeida de Oliveira, Gabriel Góes Nunes Pereira, Guilherme Vinciguerra Carvalho, Marcos Peterson Martins Pereira e Matheus Jorge Santana. O histórico Git registra autoria técnica identificável principalmente para Bruno e Matheus; atividades realizadas em colaboração, revisão ou fora do Git não permitem atribuição individual confiável.</p>
+
+        <h3>Conclusão</h3>
+        <div class="card">A Sprint 03 transformou um chatbot de texto livre em um fluxo modular, mensurável e defensivo. Na memória, a evolução foi de ausência na Sprint 01 e histórico manual na Sprint 02 para sessões isoladas e limitadas por tokens na Sprint 03. A correção do roteamento contextual elevou o teste offline de 33,33% para 100,00% sem reduzir as recusas corretas.</div>
+        <p><b>Próximos passos da memória:</b> ampliar os três follow-ups avaliáveis; validar conversas próximas do limite de tokens; persistir sessões fora do processo; e repetir a medição com os modelos reais.</p>
+      </div>
+    </div>
+
+    <p class="note"><b>Fontes internas:</b> <i>evals/before_after.md</i>, <i>evals/legacy_results.json</i>, <i>evals/sprint3_results.json</i>, <i>docs/relatorio_modelos.md</i>, <i>prompts/README.md</i> e código em <i>src/</i>. Métricas coletadas em 11–12/09/2026.</p>
+    <div class="footer">ChargeWise AI | Relatório de Evolução | 5/5</div>
+  </section>
+</body>
+</html>

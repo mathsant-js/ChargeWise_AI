@@ -112,6 +112,12 @@ class DeterministicChatModel(BaseChatModel):
         ).lower()
         charger_ids = re.findall(r"\bGW-[A-Z0-9-]+\b", context, re.IGNORECASE)
         asks_context = "qual carregador" in normalized or "qual é o problema" in normalized
+        asks_contextual_cost = bool(re.search(r"\bquanto\b.{0,30}\bcusta\b", normalized))
+        consumption_matches = re.findall(r"(\d+(?:[.,]\d+)?)\s*kwh\b", user_context)
+        tariff_matches = re.findall(
+            r"tarifa\s+(?:de\s+)?r\$\s*(\d+(?:[.,]\d+)?)", user_context
+        )
+        estimated_value = None
         if asks_context and charger_ids:
             charger_id = charger_ids[-1].upper()
             is_offline = "offline" in context.lower()
@@ -126,6 +132,12 @@ class DeterministicChatModel(BaseChatModel):
                 else f"Você mencionou o carregador {charger_id}; não há problema registrado no histórico."
             )
             intent = "status_carregador"
+        elif asks_contextual_cost and consumption_matches and tariff_matches:
+            consumption = float(consumption_matches[-1].replace(",", "."))
+            tariff = float(tariff_matches[-1].replace(",", "."))
+            estimated_value = round(consumption * tariff, 2)
+            intent = "faturamento"
+            answer = f"A recarga custa aproximadamente R$ {estimated_value:.2f}."
         elif any(term in normalized for term in ("custo", "custou", "tarifa", "preço", "preco", "valor", "gastei", "reais")):
             intent = "faturamento"
             answer = "O custo é calculado por consumo em kWh multiplicado pela tarifa em R$/kWh."
@@ -141,6 +153,7 @@ class DeterministicChatModel(BaseChatModel):
         content = ConsultaRecarga(
             intencao=intent,
             resposta=answer,
+            valor_estimado=estimated_value,
             confianca=0.7,
         ).model_dump_json()
         return ChatResult(generations=[ChatGeneration(message=AIMessage(content=content))])

@@ -150,8 +150,21 @@ class LCELAdapter:
 
 
 def _normalize(text: str) -> str:
-    decomposed = unicodedata.normalize("NFKD", text.casefold())
-    return "".join(character for character in decomposed if not unicodedata.combining(character))
+    canonical = text.casefold().translate(str.maketrans({
+        "‐": "-",
+        "‑": "-",
+        "‒": "-",
+        "–": "-",
+        "—": "-",
+        "―": "-",
+        "\u00a0": " ",
+        "\u202f": " ",
+    }))
+    decomposed = unicodedata.normalize("NFKD", canonical)
+    without_accents = "".join(
+        character for character in decomposed if not unicodedata.combining(character)
+    )
+    return " ".join(without_accents.split())
 
 
 def _contains_expected(response: str, case: dict[str, Any]) -> bool:
@@ -226,6 +239,28 @@ def evaluate_case(case: dict[str, Any], adapter: LegacyAdapter | LCELAdapter) ->
         quality = 4.0 * relevance + 2.0 * (intent_correct if adapter.structured else relevance)
         quality += 2.0 * (error is None) + 2.0 * (schema_valid if adapter.structured else 0)
     diagnostics = adapter.diagnostics(case["session_id"])
+    is_memory_followup = (
+        case["category"] == "memory_context"
+        and bool(case.get("memory_keywords"))
+    )
+    memory_model_reached = diagnostics.get("model_called", False) if is_memory_followup else None
+    memory_context_transmitted = (
+        diagnostics.get("estimated_history_tokens", 0) > 0
+        if is_memory_followup and diagnostics.get("model_called", False)
+        else (False if is_memory_followup else None)
+    )
+    memory_failure_reason = None
+    if is_memory_followup and not memory_success:
+        if error is not None:
+            memory_failure_reason = "execution_error"
+        elif not diagnostics.get("model_called", False):
+            memory_failure_reason = "guardrail_block"
+        elif not memory_context_transmitted:
+            memory_failure_reason = "history_missing"
+        elif adapter.structured and not schema_valid:
+            memory_failure_reason = "schema_failure"
+        else:
+            memory_failure_reason = "model_recall_failure"
     usage = diagnostics.get("provider_usage", {})
     provider_input = usage.get("input_tokens")
     provider_output = usage.get("output_tokens")
@@ -242,6 +277,9 @@ def evaluate_case(case: dict[str, Any], adapter: LegacyAdapter | LCELAdapter) ->
         "refusal_correct": refusal_correct,
         "professional_referral_correct": professional_correct,
         "memory_success": memory_success,
+        "memory_model_reached": memory_model_reached,
+        "memory_context_transmitted": memory_context_transmitted,
+        "memory_failure_reason": memory_failure_reason,
         "quality_0_10": round(quality, 2),
         "model_called": diagnostics.get("model_called", False),
         "latency_end_to_end_ms": end_to_end_ms,
@@ -294,6 +332,8 @@ def summarize(results: list[dict[str, Any]]) -> dict[str, Any]:
         "refusal_rate": _rate(blocked, "refusal_correct"),
         "professional_referral_rate": _rate(blocked, "professional_referral_correct"),
         "memory_success_rate": _rate(memory, "memory_success"),
+        "memory_model_reached_rate": _rate(memory, "memory_model_reached"),
+        "memory_context_transmitted_rate": _rate(memory, "memory_context_transmitted"),
         "model_calls": len(model_results),
         "tokens_total": sum(result["tokens"]["total"] for result in results),
         "tokens_average_per_model_call": round(
