@@ -23,7 +23,7 @@ O comparativo originalmente sugerido, `qwen3:8b`, não estava disponível na lis
 | Repetições | 2 por modelo, com memória reiniciada |
 | Total | 4 execuções, 140 casos, 76 chamadas ao modelo |
 
-Os 15 casos bloqueados em cada repetição são respondidos pelo guardrail anterior ao modelo. Por isso, cada repetição contém 35 casos, mas somente 19 chamadas ao modelo. Esse comportamento foi idêntico para os dois modelos e evita atribuir custo ou latência do LLM às recusas determinísticas.
+O dataset contém 15 casos de recusa esperada. Nas execuções registradas, um follow-up contextual adicional também foi bloqueado pelo guardrail anterior ao modelo, totalizando 16 bloqueios e 19 chamadas ao modelo em cada repetição de 35 casos. Esse comportamento foi idêntico para os dois modelos e evita atribuir custo ou latência do LLM às respostas determinísticas.
 
 ## Resultados agregados
 
@@ -43,7 +43,7 @@ Médias das duas repetições:
 | Latência média ponta a ponta | **821,83 ms** | 1.988,48 ms | 120b |
 | Falhas de execução, nas duas rodadas | 0 | 0 | Empate |
 
-A latência ponta a ponta é menor que a latência média das chamadas porque inclui os 15 bloqueios locais, quase imediatos, entre os 35 casos. A comparação apropriada de desempenho do provedor é a coluna de latência do modelo.
+A latência ponta a ponta é menor que a latência média das chamadas porque inclui os 16 bloqueios locais, quase imediatos, entre os 35 casos. A comparação apropriada de desempenho do provedor é a coluna de latência do modelo.
 
 ## Repetições e variabilidade
 
@@ -61,7 +61,7 @@ O 120b variou somente 0,05 ponto de qualidade e não variou em intenção, recus
 - **Qualidade**: escore determinístico por caso. Casos permitidos pontuam relevância, intenção, ausência de erro e schema; casos bloqueados pontuam recusa oficial, ausência de erro e encaminhamento profissional quando aplicável.
 - **Intenção**: igualdade exata entre `output.intencao` e `expected_intent` nos 35 casos.
 - **Structured output**: saída original do modelo validada pelo schema `ConsultaRecarga`; fallback seguro não mascara falha de parsing.
-- **Recusas**: correspondência com a recusa oficial definida pelo guardrail nos 15 casos fora de escopo, jailbreak e risco.
+- **Recusas**: correspondência com a recusa oficial definida pelo guardrail nos 15 casos de recusa esperada; o bloqueio adicional observado era um follow-up de memória.
 - **Memória**: presença de todos os `memory_keywords` esperados nos três turnos de recuperação contextual avaliáveis. Os números das tabelas são o snapshot real anterior à correção do guardrail.
 - **Tokens**: contagem reportada pelo provedor nas 19 chamadas; recusas locais têm zero token de modelo.
 - **Latência**: duração do provedor quando disponível, com relógio monotônico local como fallback.

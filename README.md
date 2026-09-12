@@ -413,6 +413,14 @@ relatórios completos estão em `evals/README.md`, `evals/condominium_results.js
 
 <br>
 
+# 📄 Relatório da Sprint 03
+
+O relatório de evolução, formatado para visualização e impressão em PDF, está disponível via site:
+
+> https://relatorio-evolucao-sprint3-mathsant.netlify.app/
+
+<br>
+
 # 🎥 Vídeo demonstrativo
 
 🎥 Assistir no YouTube:
