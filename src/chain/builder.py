@@ -1,10 +1,11 @@
 import os
 import re
 import json
+import time
 from typing import Any
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -31,6 +32,7 @@ from src.chain.memoria import (
     MEMORY_INPUT_KEY,
     SessionMemoryStore,
     count_message_tokens,
+    count_messages_tokens,
     count_text_tokens,
     trim_history,
     truncate_text,
@@ -71,9 +73,15 @@ parser = PydanticOutputParser(pydantic_object=ConsultaRecarga)
 class ValidatedOutput(dict[str, Any]):
     """Public response data carrying non-serialized parser diagnostics."""
 
-    def __init__(self, data: dict[str, Any], schema_valid: bool) -> None:
+    def __init__(
+        self,
+        data: dict[str, Any],
+        schema_valid: bool,
+        diagnostics: dict[str, Any] | None = None,
+    ) -> None:
         super().__init__(data)
         self.schema_valid = schema_valid
+        self.diagnostics = diagnostics or {}
 
 
 class DeterministicChatModel(BaseChatModel):
@@ -144,6 +152,11 @@ def robust_parse_and_moderate(
 ) -> ValidatedOutput:
     """Parse structured JSON and always apply post-model moderation."""
     raw_text = str(llm_output.content)
+    diagnostics = {
+        "raw_output": raw_text,
+        "usage_metadata": dict(getattr(llm_output, "usage_metadata", None) or {}),
+        "response_metadata": dict(getattr(llm_output, "response_metadata", None) or {}),
+    }
     try:
         raw_data = json.loads(
             raw_text,
@@ -153,9 +166,13 @@ def robust_parse_and_moderate(
         )
         parsed_obj = ConsultaRecarga.model_validate(raw_data)
         moderated = moderate_output(parsed_obj.model_dump(), moderation_context)
-        return ValidatedOutput(moderated, schema_valid=True)
+        return ValidatedOutput(moderated, schema_valid=True, diagnostics=diagnostics)
     except (json.JSONDecodeError, TypeError, ValueError):
-        return ValidatedOutput(moderate_output({"resposta": raw_text}), schema_valid=False)
+        return ValidatedOutput(
+            moderate_output({"resposta": raw_text}),
+            schema_valid=False,
+            diagnostics=diagnostics,
+        )
 
 
 def _create_model() -> BaseChatModel:
@@ -251,6 +268,7 @@ class LCELChainWrapper:
         memory_limit = history_limit - max_output_tokens - fixed_tokens
         self.memory_store = SessionMemoryStore(chat_model, memory_limit)
         self._schema_validity: dict[str, bool] = {}
+        self._turn_diagnostics: dict[str, dict[str, Any]] = {}
         self._guardrail_history: dict[str, list[str]] = {}
         self.chain = create_chain(
             model=chat_model,
@@ -268,13 +286,62 @@ class LCELChainWrapper:
         self._guardrail_history[session_id] = self._guardrail_history[session_id][-5:]
         if not decision.allowed:
             self._schema_validity[session_id] = True
+            self._turn_diagnostics[session_id] = {
+                "model_called": False,
+                "blocked_category": decision.category.value if decision.category else None,
+                "estimated_input_tokens": 0,
+                "estimated_history_tokens": 0,
+                "estimated_output_tokens": 0,
+                "provider_usage": {},
+                "response_metadata": {},
+                "raw_model_output": None,
+                "model_latency_ms": None,
+            }
             return decision.refusal()
 
+        bounded_user_input = truncate_text(user_input, max(1, self.memory_store.token_limit - 4))
+        input_message = HumanMessage(content=bounded_user_input)
+        available_history = max(
+            0,
+            self.memory_store.token_limit - count_message_tokens(input_message),
+        )
+        history = trim_history(
+            list(self.memory_store.get_session_history(session_id).messages),
+            available_history,
+        )
+        system_message = SystemMessage(
+            content=self.system_prompt + "\n\n" + parser.get_format_instructions()
+        )
+        estimated_history_tokens = count_messages_tokens(history)
+        estimated_input_tokens = count_messages_tokens(
+            [system_message, *history, input_message]
+        )
+        started = time.perf_counter()
         result = self.chain.invoke(
             {MEMORY_INPUT_KEY: user_input},
             config={"configurable": {"session_id": session_id}},
         )
+        elapsed_ms = (time.perf_counter() - started) * 1000
         self._schema_validity[session_id] = getattr(result, "schema_valid", False)
+        raw_diagnostics = getattr(result, "diagnostics", {})
+        response_metadata = raw_diagnostics.get("response_metadata", {})
+        provider_duration = response_metadata.get("total_duration")
+        provider_latency_ms = (
+            provider_duration / 1_000_000
+            if isinstance(provider_duration, (int, float))
+            else None
+        )
+        self._turn_diagnostics[session_id] = {
+            "model_called": True,
+            "blocked_category": None,
+            "estimated_input_tokens": estimated_input_tokens,
+            "estimated_history_tokens": estimated_history_tokens,
+            "estimated_output_tokens": count_text_tokens(raw_diagnostics.get("raw_output", "")),
+            "provider_usage": raw_diagnostics.get("usage_metadata", {}),
+            "response_metadata": response_metadata,
+            "raw_model_output": raw_diagnostics.get("raw_output"),
+            "model_latency_ms": provider_latency_ms or round(elapsed_ms, 2),
+        }
         return dict(result)
 
     def clear_session(self, session_id: str) -> None:
@@ -286,6 +353,9 @@ class LCELChainWrapper:
 
     def structured_output_valid(self, session_id: str) -> bool:
         return self._schema_validity.get(session_id, False)
+
+    def turn_diagnostics(self, session_id: str) -> dict[str, Any]:
+        return dict(self._turn_diagnostics.get(session_id, {}))
 
 
 def create_chain_wrapper(

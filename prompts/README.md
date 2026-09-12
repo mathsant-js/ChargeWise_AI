@@ -35,10 +35,14 @@ Uma versão pode ser fixada por `PROMPT_VERSION=v1` ou pelo argumento `prompt_ve
 das fábricas em `src.chain.builder`.
 
 ```bash
-PYTHONPATH=. USE_MOCK_MODEL=1 python3 evals/run_evals.py --prompt-version all
-PYTHONPATH=. USE_MOCK_MODEL=1 python3 evals/run_evals.py --prompt-version v1
-PROMPT_VERSION=v2 PYTHONPATH=. USE_MOCK_MODEL=1 python3 app.py
+PROMPT_VERSION=v1 PYTHONPATH=. USE_MOCK_MODEL=1 python3 -m src.main
+PROMPT_VERSION=v2 PYTHONPATH=. USE_MOCK_MODEL=1 python3 -m src.main
+PROMPT_VERSION=v3 PYTHONPATH=. USE_MOCK_MODEL=1 python3 -m src.main
 ```
+
+A avaliação canônica antes/depois usa v1 no adaptador legado e v3 no LCEL conforme
+`evals/README.md`. A comparação histórica v1/v2/v3 permanece em
+`evals/prompt_comparison_results.json`.
 
 Alterações de comportamento devem criar uma nova versão, preservando v1, v2 e v3 para
 reprodução histórica, e atualizar esta tabela com uma nova execução controlada.
