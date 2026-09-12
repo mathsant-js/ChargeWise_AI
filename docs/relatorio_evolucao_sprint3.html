@@ -100,7 +100,7 @@
       <tr>
         <td>Entrada<br>+ session_id</td><td class="arrow">›</td>
         <td>Guardrail<br>pré-modelo</td><td class="arrow">›</td>
-        <td>Prompt v3<br>+ memória</td><td class="arrow">›</td>
+        <td>Prompt versionado<br>v4 atual</td><td class="arrow">›</td>
         <td>Chain LCEL<br>+ ChatOllama</td><td class="arrow">›</td>
         <td>Pydantic<br>+ moderação</td><td class="arrow">›</td>
         <td>ConsultaRecarga<br>ou recusa segura</td>
@@ -116,7 +116,7 @@
           <li><b>Schema Pydantic v2:</b> contrato único para intenção, resposta, estado, potência, valor, encaminhamento e confiança.</li>
           <li><b>Memória por sessão:</b> limite de 4.096 tokens e resumo extrativo determinístico dos turnos antigos.</li>
           <li><b>Defesa em camadas:</b> validação determinística antes do modelo e moderação após a geração.</li>
-          <li><b>Prompt v3:</b> tags XML, saída JSON e recusas oficiais por categoria.</li>
+          <li><b>Prompt versionado:</b> v4 atual com tags XML, saída JSON e contexto condominial delimitado.</li>
         </ul>
       </div>
       <div class="col">
@@ -126,12 +126,12 @@
           <li>Schema rígido aumenta confiabilidade de integração, mas uma resposta útil com JSON inválido precisa cair em fallback.</li>
           <li>Resumo sem LLM não adiciona custo nem latência de modelo, mas pode eliminar nuances importantes.</li>
           <li>Memória em processo simplifica a PoC, porém não persiste após reinício e não atende escalabilidade horizontal.</li>
-          <li>O 120B entrega maior qualidade; o 20B continua útil quando o custo tiver prioridade.</li>
+          <li>O 120B apresentou maior qualidade no dataset avaliado; o 20B continua útil quando o custo tiver prioridade.</li>
         </ul>
       </div>
     </div>
 
-    <div class="callout"><b>Resultado arquitetural:</b> 15 dos 35 casos da avaliação foram recusados localmente. Assim, a Sprint 03 realizou somente 19 chamadas ao modelo, contra 35 no legado, reduzindo exposição, custo total e latência ponta a ponta.</div>
+    <div class="callout"><b>Resultado arquitetural:</b> o dataset continha 15 casos de recusa esperada. Na execução inicial, um follow-up contextual adicional foi bloqueado indevidamente, totalizando 16 bloqueios locais e 19 chamadas ao modelo, contra 35 no legado. A correção posterior passou a permitir esse tipo de referência contextual.</div>
     <div class="footer">ChargeWise AI | Relatório de Evolução | 2/5</div>
   </section>
 
@@ -144,13 +144,14 @@
     <table class="metrics">
       <tr><th>Métrica</th><th>Sprints 1/2</th><th>Sprint 03 LCEL</th></tr>
       <tr><td><b>Qualidade média</b></td><td>7,09 / 10</td><td><b>8,97 / 10</b></td></tr>
-      <tr><td><b>Tokens por turno*</b></td><td>1.720,80</td><td><b>1.583,11</b></td></tr>
+      <tr><td><b>Tokens por turno/caso*</b></td><td>1.720,80</td><td><b>859,40</b></td></tr>
+      <tr><td><b>Tokens por chamada ao modelo</b></td><td>1.720,80</td><td><b>1.583,11</b></td></tr>
       <tr><td><b>Latência média ponta a ponta</b></td><td>3.096,85 ms</td><td><b>892,33 ms</b></td></tr>
       <tr><td><b>Structured output válido</b></td><td>0,00%</td><td><b>94,29%</b></td></tr>
       <tr><td><b>Recusas corretas</b></td><td>66,67%</td><td><b>100,00%</b></td></tr>
-      <tr><td><b>Memória contextual</b></td><td>ver evolução abaixo</td><td><b>100,00% após correção</b></td></tr>
+      <tr><td><b>Memória contextual</b></td><td>66,67% real</td><td><b>33,33% real; 100% corrigido offline</b></td></tr>
     </table>
-    <p class="note">* O runner registra tokens por chamada ao modelo. Recusas locais da Sprint 03 usam zero token de modelo. “Sprints 1/2” representa a implementação legada reavaliada sob o protocolo controlado, não os seis testes manuais históricos.</p>
+    <p class="note">* Tokens por turno/caso = tokens totais divididos pelos 35 casos, incluindo recusas locais com zero token de modelo. A linha seguinte usa somente as chamadas efetivas. “Sprints 1/2” representa o legado reavaliado, não os seis testes manuais históricos.</p>
 
     <h3>Evolução da memória contextual</h3>
     <table class="metrics">
@@ -175,7 +176,7 @@
           <li>Saída estruturada passou de inexistente para 94,29% de validade.</li>
           <li>Recusas corretas cresceram 33,33 pontos percentuais.</li>
           <li>Encaminhamento profissional subiu de 40% para 100%.</li>
-          <li>O bloqueio local reduziu em 45,7% as chamadas ao modelo.</li>
+          <li>Os 16 bloqueios locais reduziram em 45,7% as chamadas ao modelo.</li>
         </ul>
       </div>
       <div class="col">
@@ -247,27 +248,19 @@
           <tr><td>Latência do modelo</td><td><b>1.247,73 ms</b></td><td>3.381,32 ms</td></tr>
           <tr><td>Custo/repetição</td><td>US$ 0,00706</td><td><b>US$ 0,00370</b></td></tr>
         </table>
-        <p>Foram feitas duas repetições de 35 casos por modelo. O <b>gpt-oss:120b</b> foi escolhido por qualidade, estabilidade e menor latência observada. O 20B, cerca de 47,5% mais barato, fica como contingência quando custo superar confiabilidade. A amostra é adequada ao exercício, mas não constitui SLA.</p>
+        <p>Foram feitas duas repetições de 35 casos por modelo. Nesse dataset e nessas execuções, o <b>gpt-oss:120b</b> apresentou maior qualidade, estabilidade e menor latência. O 20B, cerca de 47,5% mais barato, fica como contingência quando custo superar confiabilidade. A amostra é adequada ao exercício, mas não constitui SLA.</p>
 
         <h3>Evolução dos prompts</h3>
         <p><b>v1:</b> baseline textual extenso, regras e exemplos.</p>
         <p><b>v2:</b> tags XML, escopo GoodWe/EV e contrato JSON.</p>
         <p><b>v3:</b> defesa ampliada contra jailbreak, fraude e ataques indiretos; recusas oficiais e indicação de profissional.</p>
+        <p><b>v4:</b> contexto condominial delimitado, precedência de dados da simulação e separação entre dados operacionais e especificações oficiais. Sua avaliação suplementar offline não é diretamente comparável ao baseline canônico.</p>
         <p class="note">No ensaio offline determinístico, v3 usou 924,43 tokens/caso, 49,99% menos que v1. Como todas as versões atingiram 100% nesse mock, o ensaio comprova redução de tokens, não ganho real de qualidade.</p>
       </div>
 
       <div class="col">
-        <h3>Divisão do trabalho</h3>
-        <p>O grupo organizou a entrega nas seguintes frentes colaborativas:</p>
-        <ul>
-          <li>levantamento do domínio GoodWe e requisitos acadêmicos;</li>
-          <li>arquitetura LCEL, schema e integração do chatbot;</li>
-          <li>memória contextual e controle do orçamento de tokens;</li>
-          <li>guardrails, segurança e testes adversariais;</li>
-          <li>versionamento e avaliação dos prompts;</li>
-          <li>comparação de modelos, documentação e consolidação do relatório.</li>
-        </ul>
-        <p>A equipe completa é formada por Bernardo Zauza Amorim, Bruno Almeida de Oliveira, Gabriel Góes Nunes Pereira, Guilherme Vinciguerra Carvalho, Marcos Peterson Martins Pereira e Matheus Jorge Santana. O histórico Git registra autoria técnica identificável principalmente para Bruno e Matheus; atividades realizadas em colaboração, revisão ou fora do Git não permitem atribuição individual confiável.</p>
+        <h3>Equipe</h3>
+        <p>Os nomes completos e RMs dos seis integrantes estão apresentados na identificação da página 1.</p>
 
         <h3>Conclusão</h3>
         <div class="card">A Sprint 03 transformou um chatbot de texto livre em um fluxo modular, mensurável e defensivo. Na memória, a evolução foi de ausência na Sprint 01 e histórico manual na Sprint 02 para sessões isoladas e limitadas por tokens na Sprint 03. A correção do roteamento contextual elevou o teste offline de 33,33% para 100,00% sem reduzir as recusas corretas.</div>
