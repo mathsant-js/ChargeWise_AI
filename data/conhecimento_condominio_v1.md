@@ -9,8 +9,8 @@ Potência média:
 Horário de pico:
 18h às 21h
 
-Política de agendamento:
+Política de agendamento
 Reservas de até 4 horas por morador.
 
-Conflitos de horário:
+Conflitos de horário
 Prioridade para quem reservou primeiro.

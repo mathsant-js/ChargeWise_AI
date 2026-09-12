@@ -1,0 +1,797 @@
+{
+  "timestamp_utc": "2026-09-12T21:35:07.519319+00:00",
+  "mode": "offline-deterministic",
+  "conversation_sha256": "e4ef3ca924ff77910edeaea91b81acc3b0cba3115e5dbdeefe7db0ee690c38f6",
+  "same_conversations": true,
+  "expected_facts": [
+    "gw-mem-731",
+    "offline",
+    "terça-feira",
+    "804"
+  ],
+  "answer_expected_facts": [
+    "gw-mem-731",
+    "offline"
+  ],
+  "distances": [
+    4,
+    8,
+    12,
+    16,
+    24
+  ],
+  "comparisons": {
+    "producao": {
+      "v3": {
+        "summary": {
+          "cases": 5,
+          "transmission_recall_average": 0.55,
+          "answer_recall_average": 0.4,
+          "schema_valid_rate": 1.0,
+          "first_anchor_loss_distance": 12,
+          "latency_average_ms": 53.4
+        },
+        "cases": [
+          {
+            "distance": 4,
+            "history_limit": 4096,
+            "effective_memory_budget": 2261,
+            "summary_token_limit": 565,
+            "first_summary_after_filler": null,
+            "before_probe": {
+              "message_count": 10,
+              "history_tokens": 1130,
+              "has_summary": false
+            },
+            "after_probe": {
+              "message_count": 12,
+              "history_tokens": 1218,
+              "has_summary": false
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": true,
+              "offline": true,
+              "terça-feira": true,
+              "804": true
+            },
+            "transmission_recall": 1.0,
+            "recalled_facts": {
+              "gw-mem-731": true,
+              "offline": true
+            },
+            "answer_recall": 1.0,
+            "model_called": true,
+            "estimated_input_tokens": 2483,
+            "estimated_history_tokens": 1130,
+            "schema_valid": true,
+            "latency_ms": 48.62,
+            "answer": "Você mencionou o carregador GW-MEM-731, que está offline."
+          },
+          {
+            "distance": 8,
+            "history_limit": 4096,
+            "effective_memory_budget": 2261,
+            "summary_token_limit": 565,
+            "first_summary_after_filler": null,
+            "before_probe": {
+              "message_count": 18,
+              "history_tokens": 2154,
+              "has_summary": false
+            },
+            "after_probe": {
+              "message_count": 20,
+              "history_tokens": 2242,
+              "has_summary": false
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": true,
+              "offline": true,
+              "terça-feira": true,
+              "804": true
+            },
+            "transmission_recall": 1.0,
+            "recalled_facts": {
+              "gw-mem-731": true,
+              "offline": true
+            },
+            "answer_recall": 1.0,
+            "model_called": true,
+            "estimated_input_tokens": 3507,
+            "estimated_history_tokens": 2154,
+            "schema_valid": true,
+            "latency_ms": 42.39,
+            "answer": "Você mencionou o carregador GW-MEM-731, que está offline."
+          },
+          {
+            "distance": 12,
+            "history_limit": 4096,
+            "effective_memory_budget": 2261,
+            "summary_token_limit": 565,
+            "first_summary_after_filler": 9,
+            "before_probe": {
+              "message_count": 13,
+              "history_tokens": 2101,
+              "has_summary": true
+            },
+            "after_probe": {
+              "message_count": 15,
+              "history_tokens": 2188,
+              "has_summary": true
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": false,
+              "offline": true,
+              "terça-feira": false,
+              "804": false
+            },
+            "transmission_recall": 0.25,
+            "recalled_facts": {
+              "gw-mem-731": false,
+              "offline": false
+            },
+            "answer_recall": 0.0,
+            "model_called": true,
+            "estimated_input_tokens": 3454,
+            "estimated_history_tokens": 2101,
+            "schema_valid": true,
+            "latency_ms": 67.52,
+            "answer": "A potência e o tempo dependem do carregador e do veículo informados."
+          },
+          {
+            "distance": 16,
+            "history_limit": 4096,
+            "effective_memory_budget": 2261,
+            "summary_token_limit": 565,
+            "first_summary_after_filler": 9,
+            "before_probe": {
+              "message_count": 13,
+              "history_tokens": 2101,
+              "has_summary": true
+            },
+            "after_probe": {
+              "message_count": 15,
+              "history_tokens": 2188,
+              "has_summary": true
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": false,
+              "offline": true,
+              "terça-feira": false,
+              "804": false
+            },
+            "transmission_recall": 0.25,
+            "recalled_facts": {
+              "gw-mem-731": false,
+              "offline": false
+            },
+            "answer_recall": 0.0,
+            "model_called": true,
+            "estimated_input_tokens": 3454,
+            "estimated_history_tokens": 2101,
+            "schema_valid": true,
+            "latency_ms": 46.24,
+            "answer": "A potência e o tempo dependem do carregador e do veículo informados."
+          },
+          {
+            "distance": 24,
+            "history_limit": 4096,
+            "effective_memory_budget": 2261,
+            "summary_token_limit": 565,
+            "first_summary_after_filler": 9,
+            "before_probe": {
+              "message_count": 13,
+              "history_tokens": 2101,
+              "has_summary": true
+            },
+            "after_probe": {
+              "message_count": 15,
+              "history_tokens": 2188,
+              "has_summary": true
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": false,
+              "offline": true,
+              "terça-feira": false,
+              "804": false
+            },
+            "transmission_recall": 0.25,
+            "recalled_facts": {
+              "gw-mem-731": false,
+              "offline": false
+            },
+            "answer_recall": 0.0,
+            "model_called": true,
+            "estimated_input_tokens": 3454,
+            "estimated_history_tokens": 2101,
+            "schema_valid": true,
+            "latency_ms": 62.21,
+            "answer": "A potência e o tempo dependem do carregador e do veículo informados."
+          }
+        ]
+      },
+      "v4": {
+        "summary": {
+          "cases": 5,
+          "transmission_recall_average": 0.4,
+          "answer_recall_average": 0.2,
+          "schema_valid_rate": 1.0,
+          "first_anchor_loss_distance": 8,
+          "latency_average_ms": 63.49
+        },
+        "cases": [
+          {
+            "distance": 4,
+            "history_limit": 4096,
+            "effective_memory_budget": 1930,
+            "summary_token_limit": 482,
+            "first_summary_after_filler": null,
+            "before_probe": {
+              "message_count": 10,
+              "history_tokens": 1130,
+              "has_summary": false
+            },
+            "after_probe": {
+              "message_count": 12,
+              "history_tokens": 1218,
+              "has_summary": false
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": true,
+              "offline": true,
+              "terça-feira": true,
+              "804": true
+            },
+            "transmission_recall": 1.0,
+            "recalled_facts": {
+              "gw-mem-731": true,
+              "offline": true
+            },
+            "answer_recall": 1.0,
+            "model_called": true,
+            "estimated_input_tokens": 2814,
+            "estimated_history_tokens": 1130,
+            "schema_valid": true,
+            "latency_ms": 89.74,
+            "answer": "Você mencionou o carregador GW-MEM-731, que está offline."
+          },
+          {
+            "distance": 8,
+            "history_limit": 4096,
+            "effective_memory_budget": 1930,
+            "summary_token_limit": 482,
+            "first_summary_after_filler": 8,
+            "before_probe": {
+              "message_count": 11,
+              "history_tokens": 1762,
+              "has_summary": true
+            },
+            "after_probe": {
+              "message_count": 13,
+              "history_tokens": 1849,
+              "has_summary": true
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": false,
+              "offline": true,
+              "terça-feira": false,
+              "804": false
+            },
+            "transmission_recall": 0.25,
+            "recalled_facts": {
+              "gw-mem-731": false,
+              "offline": false
+            },
+            "answer_recall": 0.0,
+            "model_called": true,
+            "estimated_input_tokens": 3446,
+            "estimated_history_tokens": 1762,
+            "schema_valid": true,
+            "latency_ms": 58.28,
+            "answer": "A potência e o tempo dependem do carregador e do veículo informados."
+          },
+          {
+            "distance": 12,
+            "history_limit": 4096,
+            "effective_memory_budget": 1930,
+            "summary_token_limit": 482,
+            "first_summary_after_filler": 8,
+            "before_probe": {
+              "message_count": 11,
+              "history_tokens": 1762,
+              "has_summary": true
+            },
+            "after_probe": {
+              "message_count": 13,
+              "history_tokens": 1849,
+              "has_summary": true
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": false,
+              "offline": true,
+              "terça-feira": false,
+              "804": false
+            },
+            "transmission_recall": 0.25,
+            "recalled_facts": {
+              "gw-mem-731": false,
+              "offline": false
+            },
+            "answer_recall": 0.0,
+            "model_called": true,
+            "estimated_input_tokens": 3446,
+            "estimated_history_tokens": 1762,
+            "schema_valid": true,
+            "latency_ms": 56.24,
+            "answer": "A potência e o tempo dependem do carregador e do veículo informados."
+          },
+          {
+            "distance": 16,
+            "history_limit": 4096,
+            "effective_memory_budget": 1930,
+            "summary_token_limit": 482,
+            "first_summary_after_filler": 8,
+            "before_probe": {
+              "message_count": 11,
+              "history_tokens": 1762,
+              "has_summary": true
+            },
+            "after_probe": {
+              "message_count": 13,
+              "history_tokens": 1849,
+              "has_summary": true
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": false,
+              "offline": true,
+              "terça-feira": false,
+              "804": false
+            },
+            "transmission_recall": 0.25,
+            "recalled_facts": {
+              "gw-mem-731": false,
+              "offline": false
+            },
+            "answer_recall": 0.0,
+            "model_called": true,
+            "estimated_input_tokens": 3446,
+            "estimated_history_tokens": 1762,
+            "schema_valid": true,
+            "latency_ms": 51.76,
+            "answer": "A potência e o tempo dependem do carregador e do veículo informados."
+          },
+          {
+            "distance": 24,
+            "history_limit": 4096,
+            "effective_memory_budget": 1930,
+            "summary_token_limit": 482,
+            "first_summary_after_filler": 8,
+            "before_probe": {
+              "message_count": 11,
+              "history_tokens": 1762,
+              "has_summary": true
+            },
+            "after_probe": {
+              "message_count": 13,
+              "history_tokens": 1849,
+              "has_summary": true
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": false,
+              "offline": true,
+              "terça-feira": false,
+              "804": false
+            },
+            "transmission_recall": 0.25,
+            "recalled_facts": {
+              "gw-mem-731": false,
+              "offline": false
+            },
+            "answer_recall": 0.0,
+            "model_called": true,
+            "estimated_input_tokens": 3446,
+            "estimated_history_tokens": 1762,
+            "schema_valid": true,
+            "latency_ms": 61.42,
+            "answer": "A potência e o tempo dependem do carregador e do veículo informados."
+          }
+        ]
+      }
+    },
+    "memoria_equalizada": {
+      "v3": {
+        "summary": {
+          "cases": 5,
+          "transmission_recall_average": 0.55,
+          "answer_recall_average": 0.4,
+          "schema_valid_rate": 1.0,
+          "first_anchor_loss_distance": 12,
+          "latency_average_ms": 57.73
+        },
+        "cases": [
+          {
+            "distance": 4,
+            "history_limit": 4096,
+            "effective_memory_budget": 2261,
+            "summary_token_limit": 565,
+            "first_summary_after_filler": null,
+            "before_probe": {
+              "message_count": 10,
+              "history_tokens": 1130,
+              "has_summary": false
+            },
+            "after_probe": {
+              "message_count": 12,
+              "history_tokens": 1218,
+              "has_summary": false
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": true,
+              "offline": true,
+              "terça-feira": true,
+              "804": true
+            },
+            "transmission_recall": 1.0,
+            "recalled_facts": {
+              "gw-mem-731": true,
+              "offline": true
+            },
+            "answer_recall": 1.0,
+            "model_called": true,
+            "estimated_input_tokens": 2483,
+            "estimated_history_tokens": 1130,
+            "schema_valid": true,
+            "latency_ms": 54.11,
+            "answer": "Você mencionou o carregador GW-MEM-731, que está offline."
+          },
+          {
+            "distance": 8,
+            "history_limit": 4096,
+            "effective_memory_budget": 2261,
+            "summary_token_limit": 565,
+            "first_summary_after_filler": null,
+            "before_probe": {
+              "message_count": 18,
+              "history_tokens": 2154,
+              "has_summary": false
+            },
+            "after_probe": {
+              "message_count": 20,
+              "history_tokens": 2242,
+              "has_summary": false
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": true,
+              "offline": true,
+              "terça-feira": true,
+              "804": true
+            },
+            "transmission_recall": 1.0,
+            "recalled_facts": {
+              "gw-mem-731": true,
+              "offline": true
+            },
+            "answer_recall": 1.0,
+            "model_called": true,
+            "estimated_input_tokens": 3507,
+            "estimated_history_tokens": 2154,
+            "schema_valid": true,
+            "latency_ms": 62.06,
+            "answer": "Você mencionou o carregador GW-MEM-731, que está offline."
+          },
+          {
+            "distance": 12,
+            "history_limit": 4096,
+            "effective_memory_budget": 2261,
+            "summary_token_limit": 565,
+            "first_summary_after_filler": 9,
+            "before_probe": {
+              "message_count": 13,
+              "history_tokens": 2101,
+              "has_summary": true
+            },
+            "after_probe": {
+              "message_count": 15,
+              "history_tokens": 2188,
+              "has_summary": true
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": false,
+              "offline": true,
+              "terça-feira": false,
+              "804": false
+            },
+            "transmission_recall": 0.25,
+            "recalled_facts": {
+              "gw-mem-731": false,
+              "offline": false
+            },
+            "answer_recall": 0.0,
+            "model_called": true,
+            "estimated_input_tokens": 3454,
+            "estimated_history_tokens": 2101,
+            "schema_valid": true,
+            "latency_ms": 55.58,
+            "answer": "A potência e o tempo dependem do carregador e do veículo informados."
+          },
+          {
+            "distance": 16,
+            "history_limit": 4096,
+            "effective_memory_budget": 2261,
+            "summary_token_limit": 565,
+            "first_summary_after_filler": 9,
+            "before_probe": {
+              "message_count": 13,
+              "history_tokens": 2101,
+              "has_summary": true
+            },
+            "after_probe": {
+              "message_count": 15,
+              "history_tokens": 2188,
+              "has_summary": true
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": false,
+              "offline": true,
+              "terça-feira": false,
+              "804": false
+            },
+            "transmission_recall": 0.25,
+            "recalled_facts": {
+              "gw-mem-731": false,
+              "offline": false
+            },
+            "answer_recall": 0.0,
+            "model_called": true,
+            "estimated_input_tokens": 3454,
+            "estimated_history_tokens": 2101,
+            "schema_valid": true,
+            "latency_ms": 73.11,
+            "answer": "A potência e o tempo dependem do carregador e do veículo informados."
+          },
+          {
+            "distance": 24,
+            "history_limit": 4096,
+            "effective_memory_budget": 2261,
+            "summary_token_limit": 565,
+            "first_summary_after_filler": 9,
+            "before_probe": {
+              "message_count": 13,
+              "history_tokens": 2101,
+              "has_summary": true
+            },
+            "after_probe": {
+              "message_count": 15,
+              "history_tokens": 2188,
+              "has_summary": true
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": false,
+              "offline": true,
+              "terça-feira": false,
+              "804": false
+            },
+            "transmission_recall": 0.25,
+            "recalled_facts": {
+              "gw-mem-731": false,
+              "offline": false
+            },
+            "answer_recall": 0.0,
+            "model_called": true,
+            "estimated_input_tokens": 3454,
+            "estimated_history_tokens": 2101,
+            "schema_valid": true,
+            "latency_ms": 43.77,
+            "answer": "A potência e o tempo dependem do carregador e do veículo informados."
+          }
+        ]
+      },
+      "v4": {
+        "summary": {
+          "cases": 5,
+          "transmission_recall_average": 0.55,
+          "answer_recall_average": 0.4,
+          "schema_valid_rate": 1.0,
+          "first_anchor_loss_distance": 12,
+          "latency_average_ms": 72.03
+        },
+        "cases": [
+          {
+            "distance": 4,
+            "history_limit": 4427,
+            "effective_memory_budget": 2261,
+            "summary_token_limit": 565,
+            "first_summary_after_filler": null,
+            "before_probe": {
+              "message_count": 10,
+              "history_tokens": 1130,
+              "has_summary": false
+            },
+            "after_probe": {
+              "message_count": 12,
+              "history_tokens": 1218,
+              "has_summary": false
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": true,
+              "offline": true,
+              "terça-feira": true,
+              "804": true
+            },
+            "transmission_recall": 1.0,
+            "recalled_facts": {
+              "gw-mem-731": true,
+              "offline": true
+            },
+            "answer_recall": 1.0,
+            "model_called": true,
+            "estimated_input_tokens": 2814,
+            "estimated_history_tokens": 1130,
+            "schema_valid": true,
+            "latency_ms": 56.22,
+            "answer": "Você mencionou o carregador GW-MEM-731, que está offline."
+          },
+          {
+            "distance": 8,
+            "history_limit": 4427,
+            "effective_memory_budget": 2261,
+            "summary_token_limit": 565,
+            "first_summary_after_filler": null,
+            "before_probe": {
+              "message_count": 18,
+              "history_tokens": 2154,
+              "has_summary": false
+            },
+            "after_probe": {
+              "message_count": 20,
+              "history_tokens": 2242,
+              "has_summary": false
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": true,
+              "offline": true,
+              "terça-feira": true,
+              "804": true
+            },
+            "transmission_recall": 1.0,
+            "recalled_facts": {
+              "gw-mem-731": true,
+              "offline": true
+            },
+            "answer_recall": 1.0,
+            "model_called": true,
+            "estimated_input_tokens": 3838,
+            "estimated_history_tokens": 2154,
+            "schema_valid": true,
+            "latency_ms": 52.41,
+            "answer": "Você mencionou o carregador GW-MEM-731, que está offline."
+          },
+          {
+            "distance": 12,
+            "history_limit": 4427,
+            "effective_memory_budget": 2261,
+            "summary_token_limit": 565,
+            "first_summary_after_filler": 9,
+            "before_probe": {
+              "message_count": 13,
+              "history_tokens": 2101,
+              "has_summary": true
+            },
+            "after_probe": {
+              "message_count": 15,
+              "history_tokens": 2188,
+              "has_summary": true
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": false,
+              "offline": true,
+              "terça-feira": false,
+              "804": false
+            },
+            "transmission_recall": 0.25,
+            "recalled_facts": {
+              "gw-mem-731": false,
+              "offline": false
+            },
+            "answer_recall": 0.0,
+            "model_called": true,
+            "estimated_input_tokens": 3785,
+            "estimated_history_tokens": 2101,
+            "schema_valid": true,
+            "latency_ms": 138.02,
+            "answer": "A potência e o tempo dependem do carregador e do veículo informados."
+          },
+          {
+            "distance": 16,
+            "history_limit": 4427,
+            "effective_memory_budget": 2261,
+            "summary_token_limit": 565,
+            "first_summary_after_filler": 9,
+            "before_probe": {
+              "message_count": 13,
+              "history_tokens": 2101,
+              "has_summary": true
+            },
+            "after_probe": {
+              "message_count": 15,
+              "history_tokens": 2188,
+              "has_summary": true
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": false,
+              "offline": true,
+              "terça-feira": false,
+              "804": false
+            },
+            "transmission_recall": 0.25,
+            "recalled_facts": {
+              "gw-mem-731": false,
+              "offline": false
+            },
+            "answer_recall": 0.0,
+            "model_called": true,
+            "estimated_input_tokens": 3785,
+            "estimated_history_tokens": 2101,
+            "schema_valid": true,
+            "latency_ms": 64.37,
+            "answer": "A potência e o tempo dependem do carregador e do veículo informados."
+          },
+          {
+            "distance": 24,
+            "history_limit": 4427,
+            "effective_memory_budget": 2261,
+            "summary_token_limit": 565,
+            "first_summary_after_filler": 9,
+            "before_probe": {
+              "message_count": 13,
+              "history_tokens": 2101,
+              "has_summary": true
+            },
+            "after_probe": {
+              "message_count": 15,
+              "history_tokens": 2188,
+              "has_summary": true
+            },
+            "anchor_in_summary": false,
+            "transmitted_facts": {
+              "gw-mem-731": false,
+              "offline": true,
+              "terça-feira": false,
+              "804": false
+            },
+            "transmission_recall": 0.25,
+            "recalled_facts": {
+              "gw-mem-731": false,
+              "offline": false
+            },
+            "answer_recall": 0.0,
+            "model_called": true,
+            "estimated_input_tokens": 3785,
+            "estimated_history_tokens": 2101,
+            "schema_valid": true,
+            "latency_ms": 49.12,
+            "answer": "A potência e o tempo dependem do carregador e do veículo informados."
+          }
+        ]
+      }
+    }
+  }
+}

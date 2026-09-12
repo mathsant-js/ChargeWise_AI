@@ -23,7 +23,7 @@ O ChargeWise AI é um chatbot especializado em gestão de recarga de veículos e
 
 A solução utiliza Inteligência Artificial Generativa para responder dúvidas relacionadas ao uso compartilhado de carregadores, custos de energia, tempo de recarga, regras de agendamento e informações operacionais do condomínio.
 
-O sistema foi desenvolvido como uma prova de conceito alinhada ao desafio GoodWe EV ChargeOps, simulando um ambiente real de operação de infraestrutura de recarga compartilhada.
+O sistema foi desenvolvido como uma prova de conceito acadêmica alinhada ao desafio GoodWe EV ChargeOps. A base condominial e o modo offline são simulações e não representam telemetria ou uma operação real da GoodWe.
 
 <br>
 
@@ -96,55 +96,32 @@ Bibliotecas principais:
 ```bash
 ollama
 python-dotenv
+langchain
+langchain-ollama
+pydantic
+tiktoken
 ```
 
 <br>
 
-# 🤖 Modelo de IA Utilizado
+# 🤖 Modelo e modos de execução
 
-O projeto utiliza o modelo:
+No modo real, o modelo padrão configurado em `src/config.py` é:
 
 **gpt-oss:120b**
 
-A comunicação ocorre através da Ollama Cloud API utilizando autenticação por API Key.
+A chain instancia `ChatOllama` com `OLLAMA_HOST`, `OLLAMA_MODEL` e, quando presente, `OLLAMA_API_KEY`. O modelo pode ser alterado pela variável `OLLAMA_MODEL`.
 
 Configuração principal:
 
-```python
-client.chat(
-    model="gpt-oss:120b",
-    messages=mensagens
-)
-```
+Sem `OLLAMA_API_KEY` no host padrão, ou com `USE_MOCK_MODEL=true`, a aplicação usa `DeterministicChatModel`. Esse modo mock é um fallback local previsível para testes técnicos: não chama o modelo de linguagem, não mede a qualidade do `gpt-oss:120b` e não representa o resultado final da solução em modo real.
 
 <br>
 
 
 # 📊 Comparação Técnica de Modelos
 
-Durante a fase de arquitetura foram avaliadas diferentes alternativas de modelos.
-
-| Critério                       | GPT-OSS 120B | Qwen 2.5   |
-| ------------------------------ | ------------ | ---------- |
-| Qualidade em PT-BR             | Alta         | Boa        |
-| Capacidade de instrução        | Alta         | Média/Alta |
-| Contexto longo                 | Superior     | Boa        |
-| Precisão em respostas técnicas | Alta         | Boa        |
-| Latência                       | Moderada     | Menor      |
-| Consumo computacional local    | Muito alto   | Médio      |
-| Execução em nuvem              | Sim          | Sim        |
-| Execução local                 | Limitada     | Fácil      |
-
-### Justificativa da escolha
-
-O GPT-OSS 120B foi selecionado por apresentar melhor aderência ao cenário de assistência técnica especializada, principalmente em:
-
-* Seguimento de instruções complexas
-* Uso consistente de contexto
-* Melhor compreensão de português brasileiro
-* Maior qualidade em respostas especializadas
-
-Embora o Qwen apresente menor custo computacional e menor latência quando executado localmente, o GPT-OSS demonstrou melhor desempenho para o domínio do projeto.
+O comparativo executado usou `gpt-oss:120b` e `gpt-oss:20b`; `qwen3:8b` não estava disponível no endpoint consultado. Método, resultados brutos, limitações e data da medição estão em `docs/relatorio_modelos.md` e `evals/model_comparison_results.json`. As conclusões se restringem a esse dataset e a essas execuções.
 
 <br>
 
@@ -152,7 +129,9 @@ Embora o Qwen apresente menor custo computacional e menor latência quando execu
 
 ## System Prompt
 
-O comportamento do assistente é controlado por um System Prompt especializado.
+O comportamento atual do assistente é controlado por
+`prompts/system_prompt_v4.md`. O v4 separa as instruções em blocos XML de identidade,
+escopo, segurança, conhecimento, precisão e saída estruturada.
 
 O prompt define:
 
@@ -161,6 +140,11 @@ O prompt define:
 * Restrições de privacidade
 * Formato das respostas
 * Uso do contexto do condomínio
+
+Além das proteções já existentes, o v4 define que o conhecimento condominial é apenas
+uma fonte de dados operacionais, não documentação oficial GoodWe. Valores fornecidos
+pelo usuário em simulações têm precedência somente naquele cenário e não alteram a base.
+O modelo deve responder exclusivamente com JSON compatível com `ConsultaRecarga`.
 
 
 ## Few-Shot Prompting
@@ -183,6 +167,12 @@ O histórico da conversa é armazenado e reenviado ao modelo a cada interação.
 
 Isso permite responder perguntas dependentes de contexto.
 
+Cada conversa é isolada por `session_id`. O histórico recente é mantido em pares completos e, quando o limite de tokens é atingido, os turnos antigos são convertidos em um resumo determinístico e extrativo, sem chamada adicional ao modelo.
+
+A implementação usa `RunnableWithMessageHistory` com a chave de entrada `input` e a chave de histórico `history`. Um `SessionMemoryStore` isola o histórico por sessão e aplica o orçamento definido por `MESSAGE_TOKEN_LIMIT` (padrão: 4096), reservando espaço para o system prompt, a base condominial e `OLLAMA_MAX_OUTPUT_TOKENS`. A contabilização local usa o tokenizador `cl100k_base`.
+
+Quando o orçamento é excedido, fatos dos turnos antigos são preservados em um resumo extrativo e os turnos recentes permanecem completos. Uma mensagem individual maior que o orçamento é truncada antes de chegar ao modelo; esse trade-off impede estouro de contexto, mas pode descartar o fim da mensagem. A memória é mantida apenas em processo para esta Sprint: reiniciar a aplicação apaga todas as sessões. Persistência entre reinícios exigiria um armazenamento externo.
+
 Exemplo:
 
 ```text
@@ -202,7 +192,8 @@ R$ 13,80
 
 ## Contexto Externo
 
-O sistema utiliza um arquivo de conhecimento específico do condomínio.
+O sistema utiliza `data/conhecimento_condominio_v2.md` como base versionada de
+conhecimento específico do condomínio.
 
 Exemplo:
 
@@ -211,9 +202,29 @@ Tarifa padrão: R$0,92/kWh
 Quantidade de carregadores: 4
 Potência média: 7 kW
 Horário de pico: 18h às 21h
+Reservas de até 4 horas por morador
+Prioridade para quem reservou primeiro
 ```
 
-Essas informações são incorporadas ao contexto do modelo durante a inicialização.
+Essas informações são incorporadas como uma mensagem de sistema delimitada durante a
+inicialização. A base é tratada como dado operacional do condomínio, não como fonte
+oficial de especificações GoodWe, e seus tokens fazem parte do limite total da conversa.
+
+### Base condominial v2
+
+O arquivo `data/conhecimento_condominio_v2.md` contém os seguintes dados versionados:
+
+| Informação | Valor |
+|---|---|
+| Tarifa padrão | R$ 0,92/kWh |
+| Quantidade de carregadores | 4 |
+| Potência média | 7 kW |
+| Horário de pico | 18h às 21h |
+| Limite de reserva | Até 4 horas por morador |
+| Critério de conflito | Prioridade para quem reservou primeiro |
+
+A base é carregada apenas com o prompt v4. As versões v1, v2 e v3 permanecem isoladas
+desse conteúdo para preservar a reprodução histórica das avaliações.
 
 <br>
 
@@ -235,18 +246,27 @@ Essas informações são incorporadas ao contexto do modelo durante a inicializa
 ChargeWise_AI/
 │
 ├── data/
-│   └── conhecimento_condominio.txt
+│   ├── conhecimento_condominio_v1.md
+│   └── conhecimento_condominio_v2.md
 ├── tests/
 │   └── resultados_testes.md
 │
-├── system_prompt.txt
-├── config.py
-├── chatbot.py
-├── app.py
+├── prompts/
+├── src/
+│   ├── chain/
+│   │   ├── builder.py
+│   │   └── memoria.py
+│   ├── chatbot.py
+│   ├── config.py
+│   └── main.py
 ├── requirements.txt
 ├── .env.example
 └── README.md
 ```
+
+# Arquitetura LCEL
+
+O fluxo atual é: entrada do usuário → guardrail de escopo → `LCELChainWrapper` → histórico limitado por tokens → `ChatPromptTemplate` com prompt versionado e contexto condominial → `ChatOllama` ou modelo mock determinístico → parsing Pydantic (`ConsultaRecarga`) → moderação de saída. `RunnableWithMessageHistory` mantém sessões isoladas em memória; reiniciar o processo apaga o histórico. O detalhamento está em `docs/arquitetura_plano_sprint3.md`.
 
 <br>
 
@@ -292,6 +312,8 @@ Crie um arquivo `.env` na raiz do projeto:
 
 ```env
 OLLAMA_API_KEY=sua_chave_aqui
+OLLAMA_HOST=https://ollama.com
+OLLAMA_MODEL=gpt-oss:120b
 ```
 
 <br>
@@ -299,8 +321,10 @@ OLLAMA_API_KEY=sua_chave_aqui
 # ▶️ Executando o Projeto
 
 ```bash
-python app.py
+python3 -m src.main
 ```
+
+Sem credencial, esse comando inicia em modo mock. Para o resultado do modelo configurado, informe uma `OLLAMA_API_KEY` válida e mantenha `USE_MOCK_MODEL=false`.
 
 <br>
 
@@ -349,13 +373,43 @@ Foram executados testes para validar:
 * Uso do contexto do condomínio
 * Memória conversacional
 
-Resultado geral:
+Execute a suíte para obter o resultado da revisão atual; números registrados em relatórios são snapshots das execuções que os geraram.
 
-```text
-Total de testes: 6
-Aprovados: 6
-Taxa de sucesso: 100%
+## Comandos de validação e entrega
+
+```bash
+pytest -q tests/
+python3 evals/run_evals.py
+python3 -m src.main
 ```
+
+Sem argumentos, `run_evals.py` verifica os dois fluxos em modo offline sem sobrescrever os relatórios versionados. Use as opções descritas em `evals/README.md` para gerar artefatos offline ou executar o modelo real.
+
+## Avaliação do prompt v4 e da base condominial v2
+
+Uma avaliação suplementar offline comparou o v3 sem a base com o v4 usando
+`data/conhecimento_condominio_v2.md`, nos mesmos 10 casos condominiais:
+
+| Configuração | Acertos | Taxa de sucesso | Tokens estimados |
+|---|---:|---:|---:|
+| v3 sem base condominial | 2/10 | 20% | 12.802 |
+| v4 com base condominial v2 | 10/10 | 100% | 15.793 |
+
+O v4 passou nos casos de consulta factual, cálculo com tarifa padrão, tarifa específica
+de uma simulação, formato estruturado e proteção contra alteração da base. O ganho de
+cobertura teve custo de 2.991 tokens no conjunto, aumento de 23,36%.
+
+Também foi executado um benchmark pareado de memória longa. Com o limite total padrão
+de 4.096 tokens, o contexto adicional reduziu o orçamento efetivo de histórico de 2.261
+tokens no v3 para 1.930 no v4. A primeira perda da âncora ocorreu após 12 turnos no v3 e
+8 no v4. Ao elevar a janela do v4 para 4.427 tokens, equalizando o orçamento efetivo, as
+duas versões tiveram o mesmo resultado. Assim, a diferença observada decorre dos 331
+tokens adicionais de contexto, e não de uma mudança no algoritmo de memória.
+
+Essas avaliações usam o modelo determinístico local e servem como evidência técnica
+reproduzível. Elas não substituem a validação com `gpt-oss:120b`. Os protocolos e
+relatórios completos estão em `evals/README.md`, `evals/condominium_results.json` e
+`evals/memory_v3_v4_comparison.json`.
 
 <br>
 
