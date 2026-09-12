@@ -26,6 +26,7 @@ from src.config import (
 )
 from src.guardrails.moderation import ModerationContext, moderate_output
 from src.guardrails.scope_validator import validate_scope
+from src.knowledge import format_condominium_context, load_condominium_knowledge
 from src.schemas.consulta_recarga import ConsultaRecarga
 from src.chain.memoria import (
     MEMORY_HISTORY_KEY,
@@ -113,9 +114,20 @@ class DeterministicChatModel(BaseChatModel):
         charger_ids = re.findall(r"\bGW-[A-Z0-9-]+\b", context, re.IGNORECASE)
         asks_context = "qual carregador" in normalized or "qual é o problema" in normalized
         asks_contextual_cost = bool(re.search(r"\bquanto\b.{0,30}\bcusta\b", normalized))
-        consumption_matches = re.findall(r"(\d+(?:[.,]\d+)?)\s*kwh\b", user_context)
-        tariff_matches = re.findall(
+        current_consumption_matches = re.findall(
+            r"(\d+(?:[.,]\d+)?)\s*kwh\b", normalized
+        )
+        historical_consumption_matches = re.findall(
+            r"(\d+(?:[.,]\d+)?)\s*kwh\b", user_context
+        )
+        current_tariff_matches = re.findall(
+            r"tarifa\s+(?:de\s+)?r\$\s*(\d+(?:[.,]\d+)?)", normalized
+        )
+        historical_tariff_matches = re.findall(
             r"tarifa\s+(?:de\s+)?r\$\s*(\d+(?:[.,]\d+)?)", user_context
+        )
+        condominium_tariffs = re.findall(
+            r"tarifa\s+padr[aã]o:\s*r\$\s*(\d+(?:[.,]\d+)?)", context, re.I
         )
         estimated_value = None
         if asks_context and charger_ids:
@@ -132,12 +144,74 @@ class DeterministicChatModel(BaseChatModel):
                 else f"Você mencionou o carregador {charger_id}; não há problema registrado no histórico."
             )
             intent = "status_carregador"
-        elif asks_contextual_cost and consumption_matches and tariff_matches:
-            consumption = float(consumption_matches[-1].replace(",", "."))
-            tariff = float(tariff_matches[-1].replace(",", "."))
+        elif asks_contextual_cost and (
+            current_consumption_matches or historical_consumption_matches
+        ) and (current_tariff_matches or historical_tariff_matches or condominium_tariffs):
+            current_scenario = bool(current_consumption_matches)
+            consumption_source = (
+                current_consumption_matches[-1]
+                if current_scenario
+                else historical_consumption_matches[-1]
+            )
+            if current_tariff_matches:
+                tariff_source = current_tariff_matches[-1]
+            elif current_scenario and condominium_tariffs:
+                tariff_source = condominium_tariffs[-1]
+            elif historical_tariff_matches:
+                tariff_source = historical_tariff_matches[-1]
+            else:
+                tariff_source = condominium_tariffs[-1]
+            consumption = float(consumption_source.replace(",", "."))
+            tariff = float(tariff_source.replace(",", "."))
             estimated_value = round(consumption * tariff, 2)
             intent = "faturamento"
             answer = f"A recarga custa aproximadamente R$ {estimated_value:.2f}."
+        elif "tarifa" in normalized and condominium_tariffs:
+            tariff = float(condominium_tariffs[-1].replace(",", "."))
+            intent = "faturamento"
+            answer = f"A tarifa padrão do condomínio é R$ {tariff:.2f}/kWh."
+        elif re.search(r"quantos?\s+carregadores?", normalized):
+            quantities = re.findall(
+                r"quantidade\s+de\s+carregadores:\s*(\d+)", context, re.I
+            )
+            intent = "status_carregador"
+            answer = (
+                f"O condomínio possui {quantities[-1]} carregadores."
+                if quantities
+                else "A quantidade de carregadores não está disponível na base."
+            )
+        elif "potência média" in normalized or "potencia media" in normalized:
+            powers = re.findall(r"pot[eê]ncia\s+m[eé]dia:\s*(\d+(?:[.,]\d+)?)\s*kw", context, re.I)
+            intent = "potencia"
+            answer = (
+                f"A potência média dos carregadores do condomínio é {powers[-1]} kW."
+                if powers
+                else "A potência média não está disponível na base."
+            )
+        elif "horário de pico" in normalized or "horario de pico" in normalized:
+            peaks = re.findall(r"hor[aá]rio\s+de\s+pico:\s*([^\n<]+)", context, re.I)
+            intent = "status_carregador"
+            answer = (
+                f"O horário de pico de carregamento é {peaks[-1].strip()}."
+                if peaks
+                else "O horário de pico não está disponível na base."
+            )
+        elif any(term in normalized for term in ("reserv", "agendamento")):
+            intent = "status_carregador"
+            if any(term in normalized for term in ("prioridade", "conflito", "primeiro")):
+                priorities = re.findall(r"prioridade\s+para\s+([^\n<.]+)", context, re.I)
+                answer = (
+                    f"Em conflitos de horário, a prioridade é para {priorities[-1].strip()}."
+                    if priorities
+                    else "A prioridade em conflitos não está disponível na base."
+                )
+            else:
+                limits = re.findall(r"reservas?\s+de\s+at[eé]\s+(\d+)\s+horas?", context, re.I)
+                answer = (
+                    f"A política permite reservas de até {limits[-1]} horas por morador."
+                    if limits
+                    else "A política de reservas não está disponível na base."
+                )
         elif any(term in normalized for term in ("custo", "custou", "tarifa", "preço", "preco", "valor", "gastei", "reais")):
             intent = "faturamento"
             answer = "O custo é calculado por consumo em kWh multiplicado pela tarifa em R$/kWh."
@@ -211,20 +285,39 @@ def create_chain(
     memory_store: SessionMemoryStore | None = None,
     moderation_context: ModerationContext | None = None,
     prompt_version: str | None = None,
+    knowledge_content: str | None = None,
+    knowledge_source: str | None = None,
 ):
     """Build the LCEL chain with isolated, token-bounded session history."""
     chat_model = model or _create_model()
-    system_prompt, _ = _load_system_prompt(prompt_version)
+    system_prompt, selected_prompt_version = _load_system_prompt(prompt_version)
+    if selected_prompt_version != "v4" and knowledge_content is not None:
+        raise ValueError("Conhecimento condominial customizado exige prompt v4.")
+    condominium_context = None
+    if selected_prompt_version == "v4":
+        resolved_knowledge = knowledge_content if knowledge_content is not None else load_condominium_knowledge()
+        resolved_source = knowledge_source or (
+            "injetado" if knowledge_content is not None else "data/conhecimento_condominio_v2.md"
+        )
+        condominium_context = format_condominium_context(resolved_knowledge, resolved_source)
     format_instructions = parser.get_format_instructions()
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            ("system", system_prompt + "\n\n{format_instructions}"),
-            MessagesPlaceholder(variable_name=MEMORY_HISTORY_KEY),
-            ("human", "{" + MEMORY_INPUT_KEY + "}"),
-        ]
-    ).partial(format_instructions=format_instructions)
+    prompt_messages: list[Any] = [
+        ("system", system_prompt + "\n\n{format_instructions}"),
+    ]
+    fixed_messages = [
+        SystemMessage(content=system_prompt + "\n\n" + format_instructions),
+    ]
+    if condominium_context is not None:
+        prompt_messages.append(("system", condominium_context))
+        fixed_messages.append(SystemMessage(content=condominium_context))
+    prompt_messages.extend(
+        [MessagesPlaceholder(variable_name=MEMORY_HISTORY_KEY), ("human", "{" + MEMORY_INPUT_KEY + "}")]
+    )
+    prompt = ChatPromptTemplate.from_messages(prompt_messages).partial(
+        format_instructions=format_instructions
+    )
 
-    fixed_tokens = count_text_tokens(system_prompt + format_instructions)
+    fixed_tokens = count_messages_tokens(fixed_messages)
     history_budget = history_limit - max_output_tokens - fixed_tokens
     if history_budget < 1:
         raise ValueError("MESSAGE_TOKEN_LIMIT é insuficiente para o prompt e a saída reservada.")
@@ -272,13 +365,36 @@ class LCELChainWrapper:
         max_output_tokens: int = MAX_OUTPUT_TOKENS,
         moderation_context: ModerationContext | None = None,
         prompt_version: str | None = None,
+        knowledge_content: str | None = None,
+        knowledge_source: str | None = None,
     ) -> None:
         chat_model = model or _create_model()
         system_prompt, selected_prompt_version = _load_system_prompt(prompt_version)
         self.prompt_version = selected_prompt_version
         self.system_prompt = system_prompt
-        fixed_tokens = count_text_tokens(system_prompt + parser.get_format_instructions())
+        if selected_prompt_version != "v4" and knowledge_content is not None:
+            raise ValueError("Conhecimento condominial customizado exige prompt v4.")
+        resolved_knowledge = None
+        resolved_source = None
+        self.condominium_context = None
+        if selected_prompt_version == "v4":
+            resolved_knowledge = (
+                knowledge_content if knowledge_content is not None else load_condominium_knowledge()
+            )
+            resolved_source = knowledge_source or (
+                "injetado" if knowledge_content is not None else "data/conhecimento_condominio_v2.md"
+            )
+            self.condominium_context = format_condominium_context(
+                resolved_knowledge, resolved_source
+            )
+        format_instructions = parser.get_format_instructions()
+        fixed_messages = [SystemMessage(content=system_prompt + "\n\n" + format_instructions)]
+        if self.condominium_context is not None:
+            fixed_messages.append(SystemMessage(content=self.condominium_context))
+        fixed_tokens = count_messages_tokens(fixed_messages)
         memory_limit = history_limit - max_output_tokens - fixed_tokens
+        if memory_limit < 1:
+            raise ValueError("MESSAGE_TOKEN_LIMIT é insuficiente para o prompt, conhecimento e a saída reservada.")
         self.memory_store = SessionMemoryStore(chat_model, memory_limit)
         self._schema_validity: dict[str, bool] = {}
         self._turn_diagnostics: dict[str, dict[str, Any]] = {}
@@ -290,6 +406,8 @@ class LCELChainWrapper:
             memory_store=self.memory_store,
             moderation_context=moderation_context,
             prompt_version=selected_prompt_version,
+            knowledge_content=resolved_knowledge,
+            knowledge_source=resolved_source,
         )
 
     def invoke(self, user_input: str, session_id: str = "default") -> dict[str, Any]:
@@ -325,9 +443,14 @@ class LCELChainWrapper:
         system_message = SystemMessage(
             content=self.system_prompt + "\n\n" + parser.get_format_instructions()
         )
+        knowledge_messages = (
+            [SystemMessage(content=self.condominium_context)]
+            if self.condominium_context is not None
+            else []
+        )
         estimated_history_tokens = count_messages_tokens(history)
         estimated_input_tokens = count_messages_tokens(
-            [system_message, *history, input_message]
+            [system_message, *knowledge_messages, *history, input_message]
         )
         started = time.perf_counter()
         result = self.chain.invoke(
@@ -377,6 +500,8 @@ def create_chain_wrapper(
     max_output_tokens: int = MAX_OUTPUT_TOKENS,
     moderation_context: ModerationContext | None = None,
     prompt_version: str | None = None,
+    knowledge_content: str | None = None,
+    knowledge_source: str | None = None,
 ) -> LCELChainWrapper:
     return LCELChainWrapper(
         model=model,
@@ -384,4 +509,6 @@ def create_chain_wrapper(
         max_output_tokens=max_output_tokens,
         moderation_context=moderation_context,
         prompt_version=prompt_version,
+        knowledge_content=knowledge_content,
+        knowledge_source=knowledge_source,
     )

@@ -53,10 +53,15 @@ def refusal_for(category: BlockCategory) -> dict:
 _DOMAIN_PATTERN = re.compile(
     r"\b(?:goodwe|ve[ií]culo(?:s)?\s+el[eé]trico(?:s)?|carro(?:s)?\s+el[eé]trico(?:s)?|"
     r"ev|carregador(?:es)?|recarga|carregamento|esta[cç][aã]o\s+de\s+carga|wallbox|"
-    r"inversor(?:es)?|equipamento|aplicativo|sess[aã]o\s+ativa|carga|kw|"
+    r"inversor(?:es)?|equipamento|aplicativo|sess[aã]o\s+ativa|carga|kwh?|"
     r"fotovoltaic[oa]s?|energia\s+solar|energia\s+consumida|bateria(?:s)?|"
-    r"pot[eê]ncia(?:\s+de\s+carga)?|tarifa|custo|custou|gastei|carregando|cobran[cç]a|reais|"
+    r"pot[eê]ncia(?:\s+de\s+carga)?|tarifa|custo|custa|custou|gastei|carregando|cobran[cç]a|reais|"
     r"status|estado|online|offline|dispon[ií]vel|indispon[ií]vel|"
+    r"pol[ií]tica\s+de\s+agendamento\s+(?:da\s+recarga|do\s+carregador)|agendamento\s+(?:de|do)\s+carregador|"
+    r"reserv(?:a|ar|as)\s+(?:de|do|um|o)?\s*carregador|conflito\s+de\s+hor[aá]rio|"
+    r"hor[aá]rio\s+de\s+pico\s+(?:da\s+recarga|do\s+carregamento|dos?\s+carregadores?|no\s+condom[ií]nio)|"
+    r"prioridade\s+(?:de|na|em)\s+(?:uso|reserva)\s+(?:do\s+carregador|no\s+condom[ií]nio)|"
+    r"regras?\s+(?:de\s+recarga\s+)?(?:do\s+)?condom[ií]nio|"
     r"renov[aá]vel|ambiental|emiss[aã]o|combust[ií]vel)\b",
     re.I,
 )

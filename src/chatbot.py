@@ -6,8 +6,17 @@ from src.chain.builder import LCELChainWrapper, create_chain_wrapper
 
 
 class GoodWeChatbot:
-    def __init__(self, model: BaseChatModel | None = None) -> None:
-        self.chain: LCELChainWrapper = create_chain_wrapper(model=model)
+    def __init__(
+        self,
+        model: BaseChatModel | None = None,
+        knowledge_content: str | None = None,
+        prompt_version: str | None = None,
+    ) -> None:
+        self.chain: LCELChainWrapper = create_chain_wrapper(
+            model=model,
+            knowledge_content=knowledge_content,
+            prompt_version=prompt_version,
+        )
         self.ultima_resposta_estruturada: dict[str, Any] | None = None
 
     def responder_estruturado(

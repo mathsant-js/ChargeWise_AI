@@ -1,9 +1,5 @@
 # src/main.py
-"""Entry point for the ChargeGrid‑Intelligence application.
-It mirrors the behaviour of the original ``app.py`` but lives inside the
-``src`` package, matching the architecture described in
-``docs/arquitetura_plano_sprint3.md``.
-"""
+"""Command-line entry point for the ChargeWise AI application."""
 
 import os
 import warnings

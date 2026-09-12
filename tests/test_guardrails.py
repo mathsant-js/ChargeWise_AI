@@ -67,6 +67,32 @@ class TestGuardrails(unittest.TestCase):
         for request, context in cases:
             self.assertTrue(validate_scope(request, context).allowed, request)
 
+    def test_condominium_charging_rules_are_in_scope(self):
+        requests = (
+            "Qual é a política de agendamento do carregador?",
+            "Posso reservar o carregador por oito horas?",
+            "Qual é o horário de pico da recarga?",
+            "Quem tem prioridade na reserva do carregador?",
+            "Quais são as regras do condomínio?",
+        )
+
+        for request in requests:
+            self.assertTrue(validate_scope(request).allowed, request)
+
+    def test_ambiguous_operational_terms_remain_out_of_scope(self):
+        requests = (
+            "Qual é o horário de pico do metrô?",
+            "Qual é a política de agendamento do dentista?",
+            "Quem tem prioridade na reserva do restaurante?",
+        )
+
+        for request in requests:
+            self.assertEqual(
+                validate_scope(request).category,
+                BlockCategory.OUT_OF_SCOPE,
+                request,
+            )
+
     def test_domain_context_does_not_allow_unrelated_requests(self):
         context = "Meu carregador GoodWe está offline e preciso consultar seu status."
         for request in ("Quem venceu a Copa?", "Escreva um poema", "Explique isso sobre tomates"):

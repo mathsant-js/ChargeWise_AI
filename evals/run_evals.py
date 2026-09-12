@@ -413,12 +413,13 @@ def write_report(path: Path, report: dict[str, Any], overwrite: bool) -> None:
 def main() -> None:
     cli = argparse.ArgumentParser(description="Evaluate legacy and LCEL on one canonical dataset.")
     cli.add_argument("--target", choices=("legacy", "lcel", "both"), default="both")
-    cli.add_argument("--mode", choices=("offline", "real"), required=True)
+    cli.add_argument("--mode", choices=("offline", "real"), default="offline")
     cli.add_argument("--overwrite", action="store_true")
     args = cli.parse_args()
+    dry_run = len(sys.argv) == 1
     targets = ("legacy", "lcel") if args.target == "both" else (args.target,)
     for target in targets:
-        if RESULT_PATHS[target].exists() and not args.overwrite:
+        if not dry_run and RESULT_PATHS[target].exists() and not args.overwrite:
             raise FileExistsError(
                 f"{RESULT_PATHS[target].name} já existe; use --overwrite para substituir com novos metadados."
             )
@@ -427,7 +428,8 @@ def main() -> None:
         model = create_model(args.mode)
         adapter = LegacyAdapter(model) if target == "legacy" else LCELAdapter(model)
         report = build_report(adapter, cases, args.mode)
-        write_report(RESULT_PATHS[target], report, args.overwrite)
+        if not dry_run:
+            write_report(RESULT_PATHS[target], report, args.overwrite)
         summary = report["summary"]
         print(f"{target}: qualidade {summary['quality_0_10']}/10 em {summary['cases']} casos")
 

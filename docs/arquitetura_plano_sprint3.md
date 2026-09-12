@@ -23,9 +23,9 @@ flowchart TD
 | Interface de entrada | Receber mensagem + `session_id` | CLI / interface existente |
 | Guardrail de entrada | Detectar jailbreak, injection e fora‑de‑escopo | Python |
 | Gerenciador de contexto | Montar prompt, histórico e regras de domínio | XML tagging |
-| Memória | Conversas isoladas por sessão, controle de tokens | `RunnableWithMessageHistory` + `ConversationTokenBufferMemory` |
+| Memória | Conversas isoladas por sessão, controle de tokens | `RunnableWithMessageHistory` + `SessionMemoryStore` |
 | Chain principal (LCEL) | Orquestrar prompt → modelo → parser | LangChain LCEL |
-| Modelo | Gerar resposta | **ChatOllama** (gpt‑oss:120b) |
+| Modelo | Gerar resposta | `ChatOllama` (`gpt-oss:120b` por padrão) ou mock determinístico |
 | Structured output (parser) | Validar resposta conforme domínio | Pydantic v2 |
 | Guardrail de saída | Evitar informações inventadas e recomendações perigosas | Python + validação de schema |
 | Avaliação | Medir qualidade, tokens, latência e acurácia | Dataset JSON + script Python |
@@ -37,17 +37,19 @@ flowchart TD
    - Fora do escopo, jailbreak, jurídico, ou risco elétrico → recusa padronizada.
 3. **Construção do prompt** – `builder.py` carrega a versão do *system prompt* (XML) e cria `ChatPromptTemplate`.
 4. **Histórico** – `RunnableWithMessageHistory` injeta o histórico da sessão, identificado por `session_id`, com limite configurável de tokens.
-5. **Modelo** – `ChatOllama` gera a resposta.
+5. **Modelo** – `ChatOllama` gera a resposta no modo real; `DeterministicChatModel` atende testes offline.
 6. **Parsing** – Pydantic v2 valida a saída contra `ConsultaRecarga`.
 7. **Fallback** – Caso a validação falhe, retorna recusa segura (sem dados inventados).
 8. **Métricas** – Latência, contagem de tokens (via `tiktoken`) e validade da saída são registradas em `evals/`.
 
 ## 3. Estrutura de diretórios
 ```
-ChargeGrid-Intelligence/
+ChargeWise_AI/
 ├── prompts/
 │   ├── system_prompt_v1.md
 │   ├── system_prompt_v2.md
+│   ├── system_prompt_v3.md
+│   ├── system_prompt_v4.md
 │   └── README.md
 ├── src/
 │   ├── chain/
@@ -66,13 +68,14 @@ ChargeGrid-Intelligence/
 │   ├── legacy_results.json
 │   └── sprint3_results.json
 ├── tests/
-│   ├── test_chain.py
+│   ├── test_lcel_chain.py
 │   ├── test_memoria.py
-│   ├── test_schemas.py
+│   ├── test_evals.py
 │   └── test_guardrails.py
 ├── docs/
 │   ├── relatorio_modelos.md
-│   └── relatorio_evolucao.pdf
+│   ├── relatorio_evolucao_sprint3.pdf
+│   └── EV_Challenge_2026_GoodWe_Sprint_03.pdf
 ├── .env.example
 ├── .gitignore
 ├── requirements.txt
@@ -80,24 +83,21 @@ ChargeGrid-Intelligence/
 ```
 
 ## 4. Chain LCEL
-A cadeia usa composição LCEL para conectar prompt, modelo e moderação da saída.
+A cadeia usa composição LCEL para conectar prompt, modelo, histórico e moderação da saída.
 - **builder.py**
   - Carrega a versão escolhida do *system prompt*.
   - Configura `ChatPromptTemplate`.
-  - Instancia `ChatOllama`.
+  - Instancia `ChatOllama` no modo real ou `DeterministicChatModel` no modo mock.
   - Conecta ao parser Pydantic.
   - Encapsula a composição com `RunnableWithMessageHistory`.
   - Recebe parâmetros como modelo, temperature, top_p e max_tokens.
 
 ```python
-response = chatbot.invoke(
-    {"input": mensagem},
-    config={"configurable": {"session_id": session_id}}
-)
+response = chatbot.responder_estruturado(mensagem, session_id=session_id)
 ```
 
 ## 5. Memória conversacional
-- Cada sessão usa `ConversationTokenBufferMemory` como gerenciador de memória e um histórico em memória limitado por tokens.
+- Cada sessão usa o `SessionMemoryStore` do projeto e um histórico em memória limitado por tokens.
 - Cada `session_id` tem seu próprio histórico.
 - O histórico respeita um limite configurável de tokens.
 - Turnos antigos são convertidos em um resumo determinístico e extrativo ao exceder o limite.
@@ -142,7 +142,7 @@ class ConsultaRecarga(BaseModel):
 Exemplo de `system_prompt_v2.md`:
 ```xml
 <identidade>
-Você é o assistente do ChargeGrid Intelligence…
+Você é o assistente ChargeWise AI...
 </identidade>
 <escopo>
 Responda somente sobre mobilidade elétrica, recarga e informações GoodWe fornecidas no contexto.
@@ -196,7 +196,7 @@ A tabela de versões fica em `prompts/README.md` (v1 → baseline, v2 → tags X
 Acurácia estruturada = (saídas válidas no schema / total de casos) × 100.
 
 ## 10. Comparação de modelos
-`docs/relatorio_modelos.md` deve comparar, por exemplo, **gpt‑oss:120b** vs **qwen3:8b** usando mesmos parâmetros (temperature 0.2, top‑p 0.9, max_tokens 500) e o mesmo dataset de eval.
+`docs/relatorio_modelos.md` registra a comparação realizada entre `gpt-oss:120b` e `gpt-oss:20b`, com os mesmos parâmetros e dataset. O `qwen3:8b` planejado não estava disponível no endpoint durante a execução documentada.
 
 ## 11. Plano de desenvolvimento (cronograma)
 | Etapa | Datas | Entregáveis |
@@ -215,5 +215,4 @@ Acurácia estruturada = (saídas válidas no schema / total de casos) × 100.
 - **Guardrails** – 15 pts.
 - **Multi‑provider** – bônus opcional (apenas após alcançar 100 pts obrigatórios).
 
-> **Nota:** o baseline de avaliação (etapa 1) deve ser executado antes de qualquer refatoração da cadeia LCEL para garantir que os ganhos possam ser medidos no relatório final.
-```
+> **Nota histórica:** o baseline foi preservado em `evals/legacy_results.json`; comparações devem considerar as limitações descritas em `evals/README.md`.

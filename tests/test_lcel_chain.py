@@ -228,6 +228,58 @@ class TestLCELMemoryContract(unittest.TestCase):
 
         self.assertIsInstance(chain.first, RunnableWithMessageHistory)
 
+    def test_condominium_context_is_a_system_message_and_not_history(self):
+        RecordingFakeChatModel.reset_calls()
+        fake = RecordingFakeChatModel(responses=[valid_response()] * 2)
+        chain = builder.create_chain_wrapper(
+            model=fake,
+            knowledge_content="Tarifa padrão: R$0,77/kWh",
+        )
+
+        invoke(chain, "Qual é a tarifa da recarga?", "knowledge-context")
+        invoke(chain, "E quanto custa?", "knowledge-context")
+
+        latest = fake.recorded_calls[-1]
+        knowledge_messages = [
+            message
+            for message in latest
+            if "<conhecimento_condominio" in str(message.content)
+        ]
+        self.assertEqual(len(knowledge_messages), 1)
+        self.assertEqual(knowledge_messages[0].type, "system")
+        self.assertIn("R$0,77/kWh", str(knowledge_messages[0].content))
+
+    def test_prompt_v3_remains_without_condominium_context(self):
+        RecordingFakeChatModel.reset_calls()
+        fake = RecordingFakeChatModel(responses=[valid_response()])
+        chain = builder.create_chain_wrapper(model=fake, prompt_version="v3")
+
+        invoke(chain, "Qual é a tarifa da recarga?", "reproducible-v3")
+
+        content = " ".join(str(message.content) for message in fake.recorded_calls[-1])
+        self.assertNotIn("<conhecimento_condominio", content)
+        self.assertIsNone(chain.condominium_context)
+
+    def test_old_prompt_rejects_custom_condominium_context(self):
+        fake = RecordingFakeChatModel(responses=[valid_response()])
+
+        with self.assertRaises(ValueError):
+            builder.create_chain_wrapper(
+                model=fake,
+                prompt_version="v3",
+                knowledge_content="Tarifa padrão: R$0,77/kWh",
+            )
+
+    def test_knowledge_tokens_reduce_only_the_history_budget(self):
+        fake = RecordingFakeChatModel(responses=[valid_response()] * 2)
+        short = builder.create_chain_wrapper(model=fake, knowledge_content="Tarifa: 1")
+        long = builder.create_chain_wrapper(
+            model=fake,
+            knowledge_content="Regra operacional de recarga. " * 100,
+        )
+
+        self.assertLess(long.memory_store.token_limit, short.memory_store.token_limit)
+
     def test_three_turns_are_available_to_the_model(self):
         RecordingFakeChatModel.reset_calls()
         fake = RecordingFakeChatModel(responses=[valid_response()] * 3)
@@ -302,6 +354,49 @@ class TestLCELMemoryContract(unittest.TestCase):
 
         self.assertIn("offline", status)
         self.assertIn("8", cost)
+
+    def test_default_model_uses_condominium_knowledge_without_hardcoded_values(self):
+        knowledge = """# Condomínio de teste
+Tarifa padrão: R$0,77/kWh
+Quantidade de carregadores: 6
+Potência média: 11 kW
+Horário de pico: 17h às 20h
+Reservas de até 3 horas por morador.
+Prioridade para quem reservou primeiro.
+"""
+        chatbot = GoodWeChatbot(
+            model=builder.DeterministicChatModel(),
+            knowledge_content=knowledge,
+        )
+        cases = (
+            ("Qual é a tarifa padrão da recarga?", "0.77"),
+            ("Quanto custa consumir 10 kWh?", "7.70"),
+            ("Quantos carregadores existem?", "6"),
+            ("Qual é a potência média?", "11"),
+            ("Qual é o horário de pico da recarga?", "17h às 20h"),
+            ("Qual é a política de agendamento do carregador?", "3 horas"),
+            ("Quem tem prioridade na reserva do carregador?", "reservou primeiro"),
+        )
+
+        for question, expected in cases:
+            with self.subTest(question=question):
+                answer = chatbot.responder(question, session_id=question)
+                self.assertIn(expected, answer)
+
+    def test_explicit_simulation_tariff_overrides_only_that_scenario(self):
+        chatbot = GoodWeChatbot(model=builder.DeterministicChatModel())
+
+        simulated = chatbot.responder(
+            "Quanto custa 10 kWh com tarifa de R$ 0,80?",
+            session_id="same-session",
+        )
+        standard = chatbot.responder(
+            "Quanto custa consumir 10 kWh?",
+            session_id="same-session",
+        )
+
+        self.assertIn("8.00", simulated)
+        self.assertIn("9.20", standard)
 
     def test_default_and_custom_session_ids_are_isolated(self):
         RecordingFakeChatModel.reset_calls()
