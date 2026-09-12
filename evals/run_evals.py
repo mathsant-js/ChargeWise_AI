@@ -7,6 +7,7 @@ import subprocess
 import sys
 import time
 import unicodedata
+import warnings
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -15,6 +16,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core._api.deprecation import (
+    LangChainDeprecationWarning,
+    LangChainPendingDeprecationWarning,
+)
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain_ollama import ChatOllama
 
@@ -31,6 +36,10 @@ from src.config import (
 )
 from src.guardrails.scope_validator import BlockCategory, refusal_for
 from src.schemas.consulta_recarga import ConsultaRecarga
+
+
+warnings.filterwarnings("ignore", category=LangChainDeprecationWarning)
+warnings.filterwarnings("ignore", category=LangChainPendingDeprecationWarning)
 
 
 DATASET_PATH = ROOT / "evals" / "eval_dataset.json"
