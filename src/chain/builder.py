@@ -18,6 +18,7 @@ from src.config import (
     MODELO_IA,
     OLLAMA_API_KEY,
     OLLAMA_HOST,
+    PROMPT_VERSION,
     TEMPERATURE,
     TOP_P,
     USE_MOCK_MODEL,
@@ -36,21 +37,32 @@ from src.chain.memoria import (
 )
 
 
-def _load_system_prompt() -> str:
-    """Load the latest available system prompt."""
+def available_prompt_versions() -> dict[str, str]:
+    """Return prompt versions discovered from versioned filenames."""
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
     prompts_dir = os.path.join(base_dir, "prompts")
-    v3_path = os.path.join(prompts_dir, "system_prompt_v3.md")
-    v2_path = os.path.join(prompts_dir, "system_prompt_v2.md")
-    v1_path = os.path.join(prompts_dir, "system_prompt_v1.md")
-    path = next(
-        (candidate for candidate in (v3_path, v2_path, v1_path) if os.path.isfile(candidate)),
-        None,
-    )
-    if path is None:
-        return "System prompt not found."
+    discovered: dict[str, str] = {}
+    if not os.path.isdir(prompts_dir):
+        return discovered
+    for filename in os.listdir(prompts_dir):
+        match = re.fullmatch(r"system_prompt_v(\d+)\.md", filename)
+        if match:
+            discovered[f"v{int(match.group(1))}"] = os.path.join(prompts_dir, filename)
+    return dict(sorted(discovered.items(), key=lambda item: int(item[0][1:])))
+
+
+def _load_system_prompt(version: str | None = None) -> tuple[str, str]:
+    """Load an explicit prompt version or automatically select the highest one."""
+    prompts = available_prompt_versions()
+    if not prompts:
+        raise FileNotFoundError("Nenhum system prompt versionado foi encontrado.")
+    selected = (version or PROMPT_VERSION or max(prompts, key=lambda item: int(item[1:]))).lower()
+    if selected not in prompts:
+        available = ", ".join(prompts)
+        raise ValueError(f"Versão de prompt inválida: {selected}. Disponíveis: {available}.")
+    path = prompts[selected]
     with open(path, "r", encoding="utf-8") as prompt_file:
-        return prompt_file.read()
+        return prompt_file.read(), selected
 
 
 parser = PydanticOutputParser(pydantic_object=ConsultaRecarga)
@@ -168,10 +180,11 @@ def create_chain(
     max_output_tokens: int = MAX_OUTPUT_TOKENS,
     memory_store: SessionMemoryStore | None = None,
     moderation_context: ModerationContext | None = None,
+    prompt_version: str | None = None,
 ):
     """Build the LCEL chain with isolated, token-bounded session history."""
     chat_model = model or _create_model()
-    system_prompt = _load_system_prompt()
+    system_prompt, _ = _load_system_prompt(prompt_version)
     format_instructions = parser.get_format_instructions()
     prompt = ChatPromptTemplate.from_messages(
         [
@@ -228,9 +241,12 @@ class LCELChainWrapper:
         history_limit: int = MESSAGE_TOKEN_LIMIT,
         max_output_tokens: int = MAX_OUTPUT_TOKENS,
         moderation_context: ModerationContext | None = None,
+        prompt_version: str | None = None,
     ) -> None:
         chat_model = model or _create_model()
-        system_prompt = _load_system_prompt()
+        system_prompt, selected_prompt_version = _load_system_prompt(prompt_version)
+        self.prompt_version = selected_prompt_version
+        self.system_prompt = system_prompt
         fixed_tokens = count_text_tokens(system_prompt + parser.get_format_instructions())
         memory_limit = history_limit - max_output_tokens - fixed_tokens
         self.memory_store = SessionMemoryStore(chat_model, memory_limit)
@@ -242,6 +258,7 @@ class LCELChainWrapper:
             max_output_tokens=max_output_tokens,
             memory_store=self.memory_store,
             moderation_context=moderation_context,
+            prompt_version=selected_prompt_version,
         )
 
     def invoke(self, user_input: str, session_id: str = "default") -> dict[str, Any]:
@@ -276,10 +293,12 @@ def create_chain_wrapper(
     history_limit: int = MESSAGE_TOKEN_LIMIT,
     max_output_tokens: int = MAX_OUTPUT_TOKENS,
     moderation_context: ModerationContext | None = None,
+    prompt_version: str | None = None,
 ) -> LCELChainWrapper:
     return LCELChainWrapper(
         model=model,
         history_limit=history_limit,
         max_output_tokens=max_output_tokens,
         moderation_context=moderation_context,
+        prompt_version=prompt_version,
     )

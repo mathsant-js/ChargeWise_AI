@@ -62,7 +62,7 @@ _DOMAIN_PATTERN = re.compile(
 )
 
 _JAILBREAK_PATTERNS = (
-    re.compile(r"\b(?:jailbreak|prompt\s*injection|developer\s+mode|modo\s+desenvolvedor|dan\s+mode)\b", re.I),
+    re.compile(r"\b(?:jailbreak|prompt\s*injection|developer\s+mode|modo\s+desenvolvedor|dan\s+mode|bypass\s+(?:dos?\s+)?guardrails?)\b", re.I),
     re.compile(r"\b(?:ignore|ignorar|ignora|desconsidere|esque[cç]a|forget|disregard|overlook|olvida|oublie[zr]?)\b.{0,100}\b(?:instru[cç][oõ]es|regras|prompt|rules?|instructions?|directives?|restri[cç][oõ]es)\b", re.I),
     re.compile(r"\b(?:revele|mostre|exiba|imprima|repita|vaze|transcreva|reveal|show|print|repeat|leak|traduz[air]|translate|qual\s+[eé])\b.{0,100}\b(?:prompt\s+(?:do\s+)?sistema|system\s*prompt|instru[cç][oõ]es\s+internas|hidden\s+instructions?|mensagem\s+de\s+sistema)\b", re.I),
     re.compile(r"\b(?:finja|imagine|simule|interprete|assuma|pretend|act\s+as|role[ -]?play|fa[cç]a\s+de\s+conta)\b.{0,120}\b(?:sem\s+regras|sem\s+restri[cç][oõ]es|desenvolvedor|administrador|dan|unrestricted|ignore|ignorar)\b", re.I),
@@ -86,7 +86,7 @@ ELECTRICAL_ACTION_PATTERN = re.compile(
 DANGEROUS_COMPONENT_PATTERN = re.compile(
     r"\b(?:rede\s+el[eé]trica|quadro\s+el[eé]trico|disjuntor|fia[cç][aã]o|cabos?\s+energizados?|"
     r"alta\s+tens[aã]o|trif[aá]sic[oa]|aterramento|prote[cç][aã]o\s+el[eé]trica|"
-    r"interlock|sensor\s+de\s+seguran[cç]a|terminal|borne|fase|neutro|circuito)\b", re.I
+    r"interlock|sensor\s+de\s+seguran[cç]a|terminal|borne|fase|neutro|circuito|instala[cç][aã]o\s+el[eé]trica)\b", re.I
 )
 _FRAUD_PATTERN = re.compile(
     r"\b(?:fraudar|fraude|burlar|adulterar|enganar|evitar|n[aã]o\s+pagar|zerar)\w*\b.{0,60}"

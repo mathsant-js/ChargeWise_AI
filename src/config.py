@@ -12,6 +12,7 @@ TEMPERATURE = float(os.getenv("OLLAMA_TEMPERATURE", "0.2"))
 TOP_P = float(os.getenv("OLLAMA_TOP_P", "0.9"))
 MAX_OUTPUT_TOKENS = int(os.getenv("OLLAMA_MAX_OUTPUT_TOKENS", "500"))
 MESSAGE_TOKEN_LIMIT = int(os.getenv("MESSAGE_TOKEN_LIMIT", "4096"))
+PROMPT_VERSION = os.getenv("PROMPT_VERSION", "").strip().lower() or None
 USE_MOCK_MODEL = os.getenv("USE_MOCK_MODEL", "").lower() in {"1", "true", "yes"} or (
     not OLLAMA_API_KEY and OLLAMA_HOST.rstrip("/") == "https://ollama.com"
 )

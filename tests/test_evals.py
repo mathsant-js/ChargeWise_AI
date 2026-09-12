@@ -1,6 +1,7 @@
 import unittest
 
-from evals.run_evals import evaluate_case, structured_output
+from evals.run_evals import comparison_for, evaluate_case, structured_output
+from src.chain.builder import available_prompt_versions, create_chain_wrapper
 
 
 class StructuredRunner:
@@ -35,6 +36,16 @@ class SafeFallbackRunner:
 
 
 class TestSprint3Evaluation(unittest.TestCase):
+    def test_prompt_versions_are_discovered_and_selectable(self):
+        self.assertEqual(list(available_prompt_versions()), ["v1", "v2", "v3"])
+        runner = create_chain_wrapper(prompt_version="v1")
+        self.assertEqual(runner.prompt_version, "v1")
+        self.assertIn("SYSTEM PROMPT V1", runner.system_prompt)
+
+    def test_invalid_prompt_version_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "Versão de prompt inválida"):
+            create_chain_wrapper(prompt_version="v99")
+
     def test_case_uses_structured_intent_session_and_metrics(self):
         runner = StructuredRunner()
         result = evaluate_case(
@@ -89,6 +100,26 @@ class TestSprint3Evaluation(unittest.TestCase):
         self.assertFalse(result["schema_valid"])
         self.assertFalse(result["passed"])
         self.assertFalse(result["correct_refusal"])
+
+    def test_comparison_records_regressions_against_v1(self):
+        def report(quality, tokens, latency):
+            return {"summary": {
+                "quality_score": quality,
+                "intent_accuracy": quality,
+                "structured_accuracy": quality,
+                "correct_refusal_rate": quality,
+                "average_tokens_per_case": tokens,
+                "average_latency_ms": latency,
+            }}
+
+        comparison = comparison_for({
+            "v1": report(0.8, 100, 10),
+            "v2": report(0.9, 120, 9),
+            "v3": report(0.7, 90, 12),
+        })
+        self.assertEqual(comparison["v2"]["regressions_vs_v1"], ["average_tokens_per_case"])
+        self.assertIn("quality_score", comparison["v3"]["regressions_vs_v1"])
+        self.assertIn("average_latency_ms", comparison["v3"]["regressions_vs_v1"])
 
 
 if __name__ == "__main__":
