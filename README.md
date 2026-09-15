@@ -419,6 +419,10 @@ O relatório de evolução, formatado para visualização e impressão em PDF, e
 
 > https://relatorio-evolucao-sprint3-mathsant.netlify.app/
 
+Ou você pode acessar o arquivo pdf diretamente:
+
+> [Relatório Evolução Sprint 3 - PDF](docs/relatorio_evolucao_sprint3.pdf)
+
 <br>
 
 # 🎥 Vídeo demonstrativo
