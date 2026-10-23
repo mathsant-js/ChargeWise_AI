@@ -23,9 +23,21 @@ latências não são diretamente comparáveis às desta reprodução offline.
 O dataset RAG fixo e o protocolo estão em `evals/rag_eval_dataset.json` e
 `evals/rag_eval_protocol.md`. A configuração `rag-baseline-v0` foi pré-registrada
 em `evals/rag_baseline_config.json` com chunk de 900 caracteres, overlap de 135 e
-top-k 3. Ainda não existe pipeline RAG para medir recuperação ou geração; por isso
-não há métricas RAG capturadas nem alegação de ganho nesta fase. A medição
-continua pendente até a implementação do corpus/indexação e serviço RAG das
-fases 1–3. Antes de ajustar chunking, top-k ou prompt, executar o dataset fixo
-com `rag-baseline-v0` e salvar os resultados brutos segundo
-`evals/rag_eval_protocol.md`.
+top-k 3. Após as fases 1–2, a recuperação foi executada em 2026-10-23 com
+`nomic-embed-text` local e ChromaDB persistente, sem ajustar os parâmetros.
+O resultado bruto está em `evals/rag_retrieval_baseline_v0.json`, produzido por
+`python3 evals/run_rag_retrieval_baseline.py`. Ele registra commit, hashes do
+dataset e configuração, fingerprint do índice, trechos recuperados, posição,
+distância e correspondência com cada trecho esperado. O índice continha 11
+chunks. A média do recall de evidência nos sete casos avaliáveis foi **0,50**.
+A correspondência exige fonte, seção e citação literal; uma FAQ parafraseada
+não conta como acerto do trecho original. Casos sem evidência esperada não
+entram na média. O caso `rag-12` fica fora porque sua fixture de injeção ainda
+não foi indexada em corpus isolado.
+
+O resultado mede somente recuperação. Houve falhas de evidência em tarifa
+(`rag-01`, `rag-08`) e duração de reserva (`rag-03`); `rag-05` encontrou uma
+das duas evidências. Resposta gerada, faithfulness, answer_relevancy, citações
+exibidas e recusas dependem do serviço da fase 3. O status
+`pre_registered_not_executed` no arquivo de configuração registra o estado
+original do pré-registro e foi preservado para manter o hash do experimento.

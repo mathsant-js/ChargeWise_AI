@@ -5,7 +5,7 @@ import pytest
 from langchain_core.documents import Document
 
 from src.rag.chunking import chunk_documents
-from src.rag.vector_store import index_corpus
+from src.rag.vector_store import corpus_fingerprint, index_corpus
 
 
 def test_chunking_keeps_provenance_and_stable_ids():
@@ -23,6 +23,18 @@ def test_chunking_keeps_provenance_and_stable_ids():
 def test_bad_chunk_configuration():
     with pytest.raises(ValueError):
         chunk_documents([], chunk_size=100, chunk_overlap=100)
+
+
+def test_metadata_change_invalidates_fingerprint():
+    original = Document(page_content="Tarifa: R$ 0,92", metadata={
+        "chunk_id": "stable", "source": "origem.md", "document": "Cenário",
+        "section": "Tarifa", "page": None, "authority": "simulado",
+    })
+    corrected = original.model_copy(deep=True)
+    corrected.metadata["source"] = "fonte-corrigida.md"
+    assert corpus_fingerprint([original], "nomic-embed-text", 900, 135) != corpus_fingerprint(
+        [corrected], "nomic-embed-text", 900, 135
+    )
 
 
 def test_repeated_ingestion_does_not_duplicate(tmp_path, monkeypatch):

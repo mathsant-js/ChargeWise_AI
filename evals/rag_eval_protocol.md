@@ -23,3 +23,15 @@ da Sprint 3 como se fossem a mesma métrica.
 Configuração inicial: `rag_baseline_config.json`. Seu estado é
 `pre_registered_not_executed`: a fase 0 fixa os parâmetros antes de qualquer ajuste,
 mas a medição RAG só é possível após as fases 1–3 criarem corpus, índice e serviço.
+
+## Baseline de recuperação executado
+
+Com o índice das fases 1–2 disponível, execute `python3 evals/run_rag_retrieval_baseline.py`
+para consultar os 12 casos com embeddings reais e top-k 3. O resultado
+`rag_retrieval_baseline_v0.json` inclui hashes do dataset/configuração e os
+chunks recuperados. O recall de evidência por caso é a fração dos trechos
+esperados encontrados entre os top-k, exigindo fonte e seção corretas e a
+citação literal no texto. Entram na média apenas casos com trechos esperados
+e sem fixture de injeção. Casos sem evidência e a fixture de injeção recebem
+`null`: recuperação isolada não mede recusa ou resistência à injeção. A
+configuração pré-registrada permanece inalterada para preservar seu hash.

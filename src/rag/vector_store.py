@@ -17,8 +17,12 @@ DEFAULT_COLLECTION = "chargewise_knowledge"
 
 
 def corpus_fingerprint(chunks, model: str, chunk_size: int, chunk_overlap: int) -> str:
-    payload = [(d.metadata["chunk_id"], d.metadata.get("version"), d.page_content) for d in chunks]
-    return hashlib.sha256(json.dumps([model, chunk_size, chunk_overlap, payload], ensure_ascii=False).encode()).hexdigest()
+    # Inclui exatamente os metadados gravados: correções de fonte/seção também
+    # invalidam o índice, mesmo quando o texto do chunk permanece igual.
+    payload = [(d.metadata["chunk_id"], d.page_content, _metadata(d.metadata)) for d in chunks]
+    return hashlib.sha256(json.dumps(
+        [model, chunk_size, chunk_overlap, payload], ensure_ascii=False, sort_keys=True
+    ).encode()).hexdigest()
 
 
 def _metadata(metadata: dict) -> dict:

@@ -28,7 +28,7 @@ python3 -m src.rag.vector_store index
 python3 -m src.rag.vector_store inspect --limit 5
 ```
 
-O índice é persistido em `data/chroma/`, ignorado pelo Git. `CHROMA_PERSIST_DIR` permite outro diretório. Repetir `index` sobre corpus/configuração idênticos mantém a coleção e evita novos embeddings. Após alteração dos arquivos, modelo ou parâmetros, use `python3 -m src.rag.vector_store index --reindex`; o comando gera embeddings antes de substituir a coleção. O hash de versão da coleção cobre texto dos chunks, versão declarada e modelo. Se a substituição falhar após a remoção, execute `--reindex` novamente. O índice é derivado do corpus versionado e pode ser reconstruído com esses comandos. Nunca grave chaves ou índices em Git.
+O índice é persistido em `data/chroma/`, ignorado pelo Git. `CHROMA_PERSIST_DIR` permite outro diretório. Repetir `index` sobre corpus/configuração idênticos mantém a coleção e evita novos embeddings. Após alteração dos arquivos, modelo ou parâmetros, use `python3 -m src.rag.vector_store index --reindex`; o comando gera embeddings antes de substituir a coleção. O hash de versão da coleção cobre texto, metadados armazenados, modelo e parâmetros de chunking. Correções de fonte ou seção, portanto, exigem reindexação. Se a substituição falhar após a remoção, execute `--reindex` novamente. O índice é derivado do corpus versionado e pode ser reconstruído com esses comandos. Nunca grave chaves ou índices em Git.
 
 No corpus atual, seções curtas permanecem como chunks individuais; o tamanho de 900 caracteres é apenas um teto inicial, não um tamanho alvo atingido. As contagens efetivas devem ser conferidas em `inspect` após a indexação. Chunks compostos somente de títulos são descartados.
 
