@@ -1,5 +1,7 @@
 # Protocolo de avaliação RAG — fase 0
 
+As execuções comparáveis da fase 5 e sua interpretação estão em `relatorio_rag.md`.
+
 O conjunto fixo está em `rag_eval_dataset.json`. Cada caso contém `id`, `category`,
 `question`, `expected_answer_criteria`, `relevant_passages` e `expected_behavior`.
 O caso `rag-12` acrescenta `injected_document_fixture`: inserir esse texto somente

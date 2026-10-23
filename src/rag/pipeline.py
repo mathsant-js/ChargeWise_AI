@@ -14,6 +14,28 @@ from src.rag.retriever import RetrievedChunk, Retriever
 NO_EVIDENCE = "Não encontrei evidência suficiente na base para responder com segurança."
 _LIVE_OR_SPEC = re.compile(r"\b(?:agora|tempo real|neste momento|vaga\s*\d+|pot[eê]ncia nominal|modelo\s+GW-[\w-]+)\b", re.I)
 _INJECTION = re.compile(r"(?:ignore|desconsidere|revele|mostre|imprima|system prompt|prompt de sistema|instru[cç][aã]o ao assistente|<\s*system)\b", re.I)
+_TOPICS = (
+    (re.compile(r"\b(?:tarifa|pre[cç]o|custo|custa)\b", re.I), re.compile(r"tarifa|pre[cç]o|R\$", re.I)),
+    (re.compile(r"hor[aá]rio\s+de\s+pico|hor[aá]rio.*(?:maior\s+demanda|carregamento)", re.I),
+     re.compile(r"hor[aá]rio\s+de\s+pico|maior\s+demanda|18h|21h", re.I)),
+    (re.compile(r"\b(?:reservar|reserva|reservas|agendamento|tempo\s+de\s+reserva)\b", re.I),
+     re.compile(r"reserv|agend|\b4\s+horas\b", re.I)),
+    (re.compile(r"\b(?:prioridade|conflito)\b", re.I),
+     re.compile(r"prioridade|conflito|reservou\s+primeiro", re.I)),
+    (re.compile(r"\b(?:pot[eê]ncia|kw)\b", re.I), re.compile(r"pot[eê]ncia|\bkw\b", re.I)),
+    (re.compile(r"\b(?:quantos|quantidade)\b", re.I),
+     re.compile(r"quantidade|\b4\s+carregadores\b", re.I)),
+)
+
+
+def _focus_chunks(question: str, chunks: list[RetrievedChunk]) -> list[RetrievedChunk]:
+    """Keep retrieved passages on the requested subjects before model selection."""
+    required = [evidence for query, evidence in _TOPICS if query.search(question)]
+    if not required:
+        return chunks
+    focused = [chunk for chunk in chunks if any(pattern.search(
+        f"{chunk.metadata.get('section', '')} {chunk.text}") for pattern in required)]
+    return focused or chunks
 
 
 @dataclass(frozen=True)
@@ -36,7 +58,7 @@ def _model_select(messages: list[dict]) -> dict:
     host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
     key = os.getenv("OLLAMA_API_KEY", "")
     client = Client(host=host, headers={"Authorization": f"Bearer {key}"} if key else None)
-    response = client.chat(model=os.getenv("OLLAMA_MODEL", "gpt-oss:20b"), messages=messages,
+    response = client.chat(model=os.getenv("OLLAMA_MODEL", "qwen2.5:1.5b"), messages=messages,
                            format="json", options={"temperature": 0, "top_p": 0.9, "num_predict": 500})
     return json.loads(response.message.content)
 
@@ -44,7 +66,7 @@ def _model_select(messages: list[dict]) -> dict:
 class RAGService:
     def __init__(self, retriever: Retriever | None = None, selector=None,
                  max_distance: float = 1.0, prompt_version: str = PROMPT_VERSION):
-        self.retriever = retriever or Retriever(k=int(os.getenv("RAG_TOP_K", "4")))
+        self.retriever = retriever or Retriever(k=int(os.getenv("RAG_TOP_K", "3")))
         self.selector = selector or _model_select
         self.max_distance = max_distance
         self.prompt_version = prompt_version
@@ -63,6 +85,7 @@ class RAGService:
         if not chunks:
             return RAGResponse(NO_EVIDENCE, True, reason="sem_trechos_relevantes",
                                prompt_version=self.prompt_version)
+        chunks = _focus_chunks(question, chunks)
         selected = self.selector(build_messages(question, chunks, self.prompt_version))
         candidates = selected.get("evidence", []) if isinstance(selected, dict) else []
         by_id = {chunk.metadata["chunk_id"]: chunk for chunk in chunks}
@@ -86,6 +109,10 @@ class RAGService:
         lines = [f"{quote} [{index}]" for index, (_, quote) in enumerate(evidence, 1)]
         if any(source["authority"] == "simulado" for source in sources):
             lines.insert(0, "No cenário condominial simulado documentado:")
+            if re.search(r"\bmeu\s+condom[ií]nio\b", question, re.I):
+                lines.append("Esses dados do cenário não confirmam a tarifa do seu condomínio real.")
+            if re.search(r"\bmeu\s+carregador\b", question, re.I):
+                lines.append("A potência do seu equipamento específico exige o modelo ou dados técnicos dele.")
         lines.extend(f"[{index}] {chunk.citation}" for index, (chunk, _) in enumerate(evidence, 1))
         return RAGResponse("\n".join(lines), False, sources=sources,
                            prompt_version=self.prompt_version)

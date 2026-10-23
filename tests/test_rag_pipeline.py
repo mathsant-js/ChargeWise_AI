@@ -1,5 +1,6 @@
 from src.rag.pipeline import RAGService
 from src.rag.retriever import RetrievedChunk, Retriever
+from src.rag.prompt_rag import build_messages
 
 
 def chunk(text="Reservas de até 4 horas por morador.", distance=0.2):
@@ -42,6 +43,26 @@ def test_no_evidence_and_safety_skip_generation():
     assert service.answer("O carregador da vaga 12 está disponível agora?").refused
 
 
+def test_documented_condominium_scheduling_question_is_in_scope():
+    service = RAGService(FakeRetriever([chunk()]), selector=lambda messages: {
+        "evidence": [{"id": "c1", "quote": "Reservas de até 4 horas por morador."}]})
+    assert not service.answer("Qual é a política de agendamento do condomínio?").refused
+
+
+def test_context_focus_excludes_power_from_reservation_question():
+    reservation = chunk()
+    power = RetrievedChunk("Potência média: 7 kW", {
+        **chunk().metadata, "chunk_id": "power", "section": "Potência média do carregador"}, 0.3)
+
+    def select(messages):
+        assert "Reservas de até 4 horas" in messages[1]["content"]
+        assert "Potência média: 7 kW" not in messages[1]["content"]
+        return {"evidence": [{"id": "c1", "quote": "Reservas de até 4 horas por morador."}]}
+
+    service = RAGService(FakeRetriever([reservation, power]), selector=select)
+    assert not service.answer("Por quanto tempo posso reservar um carregador?").refused
+
+
 def test_retriever_returns_metadata_and_distance():
     class Embeddings:
         model = "teste"
@@ -60,3 +81,11 @@ def test_retriever_returns_metadata_and_distance():
     result = retriever.retrieve("pergunta")
     assert result[0].citation == "FAQ simulada — Política de agendamento, p. 2"
     assert result[0].distance == 0.3
+
+
+def test_prompt_versions_keep_document_as_untrusted_context():
+    for version in ("v1", "v2"):
+        messages = build_messages("Qual é a política de agendamento?", [chunk()], version)
+        assert messages[0]["role"] == "system"
+        assert "não confiável" in messages[0]["content"]
+        assert "Reservas de até 4 horas" in messages[1]["content"]
