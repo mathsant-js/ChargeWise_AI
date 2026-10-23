@@ -1,0 +1,13 @@
+{
+  "id": "rag-baseline-v0",
+  "status": "pre_registered_not_executed",
+  "dataset": "evals/rag_eval_dataset.json",
+  "corpus_seed": "data/conhecimento_condominio_v2.md",
+  "chunking": {"algorithm": "RecursiveCharacterTextSplitter", "chunk_size_characters": 900, "chunk_overlap_characters": 135},
+  "embedding_model": "nomic-embed-text",
+  "vector_store": "ChromaDB persistent",
+  "retrieval": {"top_k": 3},
+  "generation": {"temperature": 0, "prompt_version": "rag-v1-pending", "model": "to_be_recorded_at_run"},
+  "metrics": ["evidence_recall_at_k", "faithfulness_0_1", "answer_relevancy_0_1", "citation_validity", "refusal_and_safety_accuracy"],
+  "note": "Configuração inicial congelada antes da implementação; não há índice, respostas geradas nem scores RAG nesta fase."
+}
