@@ -17,4 +17,19 @@ Instale `requirements.txt` e execute na raiz do projeto:
 python3 -m src.rag.loader --manifest data/knowledge_base/manifest.json
 ```
 
-O comando carrega e limpa os documentos, lista seções/páginas e metadados, sem criar embeddings ou índice (fase 2). Markdown é separado por cabeçalhos; PDFs são carregados por página com `PyMuPDFLoader`. Cada registro conserva `source`, `document`, `section`, `page`, `version`, `date`, `type` e `authority`. A numeração de página é 1-based; Markdown não possui página (`null`). Cabeçalhos dentro de PDFs não são inferidos: a seção é identificada como `Página N` até que uma estrutura de títulos confiável seja fornecida.
+O comando carrega e limpa os documentos, lista seções/páginas e metadados. Markdown é separado por cabeçalhos; PDFs são carregados por página com `PyMuPDFLoader`. Cada registro conserva `source`, `document`, `section`, `page`, `version`, `date`, `type` e `authority`. A numeração de página é 1-based; Markdown não possui página (`null`). Cabeçalhos dentro de PDFs não são inferidos: a seção é identificada como `Página N` até que uma estrutura de títulos confiável seja fornecida.
+
+## Índice vetorial (fase 2)
+
+Instale as dependências de `requirements.txt`, inicie o Ollama e obtenha o modelo com `ollama pull nomic-embed-text`. Defina `OLLAMA_BASE_URL` se o endpoint não for o local padrão; `OLLAMA_EMBED_MODEL` pode alterar o modelo, mas exige reindexação. A configuração inicial usa chunks de 900 caracteres com overlap de 135, separados por parágrafos, linhas, frases e espaços, nessa ordem. Cada chunk registra tamanho efetivo em caracteres e tokens `cl100k_base`, além de `source`, `document`, `section`, `page` (quando existe) e `chunk_id` estável. Quando o vocabulário do tiktoken não estiver disponível offline, `tokens_cl100k_base` recebe `-1`; os caracteres permanecem exatos.
+
+```bash
+python3 -m src.rag.vector_store index
+python3 -m src.rag.vector_store inspect --limit 5
+```
+
+O índice é persistido em `data/chroma/`, ignorado pelo Git. `CHROMA_PERSIST_DIR` permite outro diretório. Repetir `index` sobre corpus/configuração idênticos mantém a coleção e evita novos embeddings. Após alteração dos arquivos, modelo ou parâmetros, use `python3 -m src.rag.vector_store index --reindex`; o comando gera embeddings antes de substituir a coleção. O hash de versão da coleção cobre texto dos chunks, versão declarada e modelo. Se a substituição falhar após a remoção, execute `--reindex` novamente. O índice é derivado do corpus versionado e pode ser reconstruído com esses comandos. Nunca grave chaves ou índices em Git.
+
+No corpus atual, seções curtas permanecem como chunks individuais; o tamanho de 900 caracteres é apenas um teto inicial, não um tamanho alvo atingido. As contagens efetivas devem ser conferidas em `inspect` após a indexação. Chunks compostos somente de títulos são descartados.
+
+Na coleção Chroma, `page=0` indica Markdown sem paginação; em PDFs, a página é positiva e começa em 1. A indexação inicial do corpus atual em 23/10/2026 com `nomic-embed-text` gerou 11 chunks. Repetir o comando retornou `unchanged` e manteve os 11 registros. Isso verifica persistência e ausência de duplicatas, não mede qualidade de recuperação ou resposta.
