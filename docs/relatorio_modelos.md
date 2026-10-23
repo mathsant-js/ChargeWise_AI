@@ -1,8 +1,91 @@
 # Relatório de comparação de modelos
 
-## Resumo executivo
+## Escopos distintos: comparação conversacional e benchmark RAG
 
-Foram executados dois modelos reais no endpoint Ollama Cloud, com duas repetições completas por modelo e 35 casos por repetição. O `gpt-oss:120b` é o modelo principal recomendado: alcançou qualidade média de **9,52/10**, contra **8,37/10** do `gpt-oss:20b`, e também venceu em acurácia de intenção, saída estruturada, recusas, tokens e latência.
+As tabelas históricas abaixo medem o chatbot conversacional da Sprint 3 com
+`evals/eval_dataset.json`, prompt v3, memória e guardrails. Elas **não medem** o
+serviço RAG da Sprint 4. O benchmark RAG usa `evals/rag_eval_dataset.json`,
+índice Chroma, embeddings `nomic-embed-text`, prompt RAG v3 e citação validada.
+As escalas e amostras são diferentes, portanto não se deve comparar o score
+9,52/10 legado com faithfulness ou answer relevancy 0–1 do RAG.
+
+### Benchmark RAG — Sprint 4
+
+O benchmark controlado da Sprint 4 executa dois modelos disponíveis no Ollama
+local, em sequência, no mesmo dataset de 12 casos (SHA-256
+`203a8709d314953ee5aaa6fea24af3ca3e0b1d886952498892ae7da5b05b203e`).
+O índice Chroma tem 11 chunks, fingerprint
+`a2f26ab6542240f04af18c47f88df3b372228ddddd3fee98f09d16d31e015845`,
+com embeddings `nomic-embed-text`. A configuração fixa é: prompt RAG `v3`,
+`k=3`, `temperature=0`, `top_p=0.9`, `max_tokens=500`, limiar de distância
+`1.0` e filtro de trechos por assunto. A interface e o serviço montam a
+resposta a partir de citações literais verificadas, por isso a qualidade
+avaliada diz respeito ao **pipeline completo**, não apenas ao texto gerado
+internamente pelo modelo.
+
+As duas execuções preservam contexto recuperado, saída, fontes, latência por
+caso e configuração em `evals/manual/phase6_*.json`. A latência é de ponta a
+ponta e inclui duas consultas ao retriever por caso, pois o executor salva os
+trechos e depois chama o serviço. Nos quatro casos de recusa local, o modelo
+gerador não precisa ser chamado. O custo do serviço local não é tarifado por
+token; energia e hardware não foram medidos. Disponibilidade e tempo de CPU
+são específicos desta máquina e desta janela, sem representar SLA.
+
+**Execução:** 23/10/2026, Ollama local em CPU. Ambos os modelos estavam
+instalados e foram chamados de fato. O modelo de embeddings e o índice foram
+os mesmos nas duas rodadas; não houve reindexação. Cada rodada foi executada
+uma vez, sequencialmente. O teste de injeção em documento pertence à avaliação
+isolada da fase 5; `rag-12` usa corpus normal neste comparativo.
+
+| Métrica RAG | `qwen2.5:1.5b` | `llama3.2:latest` |
+|---|---:|---:|
+| Disponibilidade | acessível, 8 consultas de geração | acessível, 8 consultas de geração |
+| Recall estrito de evidência (7 casos) | 0,500 | 0,500 |
+| Faithfulness (respostas emitidas) | 1,000 (8) | 1,000 (7) |
+| Answer relevancy (8 casos esperados) | **1,000** | 0,875 |
+| Cobertura de citações (respostas emitidas) | 1,000 (8) | 1,000 (7) |
+| Recusas corretas (4 casos) | 4/4 | 4/4 |
+| Latência média ponta a ponta (12 casos) | 58,95 s | 62,57 s |
+| Latência média sem o primeiro caso (11 casos) | 53,72 s | 45,88 s |
+
+As notas 0–1 seguem a rubrica de `evals/relatorio_rag.md`. Foram atribuídas
+por **revisão manual assistida por Codex**, com justificativa por caso nos
+arquivos `phase6_review_*.json`; não são scores RAGAS nem revisão humana
+independente. A recusa indevida de `llama3.2` em `rag-09` recebe relevância 0,
+pois o dataset esperava a média simulada de 7 kW com ressalva de que não
+representa o equipamento real do usuário. As respostas que ele efetivamente
+emitiu tinham fatos e citações válidos, o que explica faithfulness/citação
+1,000 calculados sobre apenas sete respostas. A seleção de trechos pelo modelo
+é diferente da recuperação bruta, cujo recall ficou igual.
+
+A primeira chamada do `llama3.2` levou 246,16 s e elevou sua média total;
+houve carregamento frio do modelo na CPU. Sem o primeiro caso, sua média foi
+menor que a do Qwen. Essa medição de uma rodada não sustenta uma afirmação de
+velocidade geral. Não foi medida contagem de tokens por chamada nem consumo
+elétrico; por ser execução local, não há preço de API por token aplicado ao
+benchmark. No escopo medido, `qwen2.5:1.5b` permanece a escolha principal
+pela cobertura de todas as oito respostas esperadas. `llama3.2` é uma opção
+acessível, com a ressalva de recusa indevida no caso ambíguo.
+
+Reprodução, após indexar conforme `app/README.md`:
+
+```bash
+OLLAMA_MODEL=qwen2.5:1.5b RAG_PROMPT_VERSION=v3 python3 evals/run_rag_phase5.py \
+  --mode live --top-k 3 --config-id comparacao-qwen-nova \
+  --output /tmp/comparacao-qwen-nova.json
+OLLAMA_MODEL=llama3.2:latest RAG_PROMPT_VERSION=v3 python3 evals/run_rag_phase5.py \
+  --mode live --top-k 3 --config-id comparacao-llama-nova \
+  --output /tmp/comparacao-llama-nova.json
+```
+
+Para reproduzir as notas publicadas, execute `evals/score_rag_manual.py` com
+cada arquivo bruto e sua revisão correspondente em `evals/manual/`. Os
+snapshots pontuados são `phase6_scored_qwen25_v3_k3.json` e
+`phase6_scored_llama32_v3_k3.json`.
+
+## Resumo executivo — comparação conversacional da Sprint 3
+
+Foram executados dois modelos reais no endpoint Ollama Cloud, com duas repetições completas por modelo e 35 casos por repetição. Para esse fluxo conversacional legado, o `gpt-oss:120b` foi o modelo principal recomendado: alcançou qualidade média de **9,52/10**, contra **8,37/10** do `gpt-oss:20b`, e também venceu em acurácia de intenção, saída estruturada, recusas, tokens e latência.
 
 O comparativo originalmente sugerido, `qwen3:8b`, não estava disponível na listagem autenticada do endpoint em 12/09/2026 UTC. Para garantir duas execuções reais, foi usado `gpt-oss:20b`, disponível no mesmo endpoint. O snapshot integral dos modelos acessíveis está preservado em `evals/model_comparison_results.json`.
 

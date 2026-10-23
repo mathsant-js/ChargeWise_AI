@@ -25,6 +25,20 @@ A solução utiliza Inteligência Artificial Generativa para responder dúvidas 
 
 O sistema foi desenvolvido como uma prova de conceito acadêmica alinhada ao desafio GoodWe EV ChargeOps. A base condominial e o modo offline são simulações e não representam telemetria ou uma operação real da GoodWe.
 
+## Sprint 4: consulta RAG e interface
+
+A interface atual usa um índice Chroma persistente, embeddings `nomic-embed-text`
+e um modelo Ollama local para selecionar trechos citáveis. O corpus disponível
+contém somente regras e números de um **cenário condominial simulado**; não há
+manuais oficiais GoodWe nem telemetria ao vivo. Respostas exibem documento e
+seção, e perguntas sem evidência suficiente recebem recusa.
+
+Instale as dependências, configure o Ollama e reconstrua o índice antes de abrir
+a interface. Os comandos e as variáveis estão em [app/README.md](app/README.md).
+Para avaliação e entrega, consulte [relatório RAG](evals/relatorio_rag.md),
+[comparação de modelos](docs/relatorio_modelos.md) e
+[relatório de evolução da Sprint 4](docs/sprint4/relatorio_evolucao_sprint4.md).
+
 <br>
 
 # 🎯 Problema

@@ -1,0 +1,11 @@
+ChargeWise AI - Sprint 4
+Curso: Ciência da Computação
+Turma: 2º semestre (2SEM) - 2026.2
+Disciplina: Prompt and Artificial Intelligence
+
+Bernardo Zauza Amorim - RM 568808
+Bruno Almeida de Oliveira - RM 572648
+Gabriel Góes Nunes Pereira - RM 571735
+Guilherme Vinciguerra Carvalho - RM 571951
+Marcos Peterson Martins Pereira - RM 573857
+Matheus Jorge Santana - RM 574166

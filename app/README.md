@@ -47,3 +47,22 @@ OLLAMA_MODEL=qwen2.5:1.5b RAG_PROMPT_VERSION=v3 python3 evals/run_rag_phase5.py 
 ```
 
 O segundo comando usa o índice e o Ollama reais. Escolha outro arquivo de saída se `/tmp/rag-verificacao.json` já existir. Os resultados e limites da avaliação concluída estão em `evals/relatorio_rag.md`.
+
+## Comparação de modelos da Sprint 4
+
+Para repetir o benchmark com dois modelos locais já baixados, mantenha o
+mesmo índice, dataset, prompt e `top-k`. O executor não sobrescreve saídas:
+
+```bash
+OLLAMA_MODEL=qwen2.5:1.5b RAG_PROMPT_VERSION=v3 python3 evals/run_rag_phase5.py \
+  --mode live --top-k 3 --config-id qwen-nova-rodada \
+  --output /tmp/rag-qwen-nova-rodada.json
+OLLAMA_MODEL=llama3.2:latest RAG_PROMPT_VERSION=v3 python3 evals/run_rag_phase5.py \
+  --mode live --top-k 3 --config-id llama-nova-rodada \
+  --output /tmp/rag-llama-nova-rodada.json
+```
+
+Execute em sequência se for comparar latência em uma única máquina. O
+relatório `docs/relatorio_modelos.md` distingue este benchmark RAG do
+comparativo conversacional da Sprint 3. As notas 0–1 exigem revisão das
+respostas brutas conforme a rubrica em `evals/relatorio_rag.md`.
