@@ -7,7 +7,7 @@ Este diretório contém apenas conteúdo do cenário **simulado** do projeto. A 
 | `condominio_cenario_v2.md` | Cópia de `data/conhecimento_condominio_v2.md` | v2; data original desconhecida, inventariado em 2026-10-23 | Regras simuladas | Tarifa, quantidade, potência média, pico, agendamento, conflitos |
 | `faq_condominio_simulado_v1.md` | FAQ derivada do mesmo arquivo v2 | v1; 2026-10-23 | FAQ simulada | Tarifa, pico, reservas, quantidade/potência |
 
-O arquivo `manifest.json` é a fonte de metadados para a ingestão: caminho, origem, versão, data, tipo, autoridade e seções. Não há licença explícita registrada para os materiais do projeto. Antes de acrescentar PDFs ou manuais externos, verificar origem legítima e direito de uso, registrar a licença/permissão e os metadados no manifesto. Não incluir o PDF do enunciado como documentação técnica GoodWe.
+O arquivo `manifest.json` é a fonte de metadados para a ingestão: caminho, origem, versão, data, tipo, autoridade e seções. Não há licença explícita registrada para os materiais do projeto. Antes de acrescentar PDFs ou manuais externos, verificar origem legítima e direito de uso, registrar a licença/permissão e os metadados no manifesto. O PDF `docs/EV_Challenge_2026_GoodWe_Sprint_03.pdf` foi usado somente para validar a extração por página; é um enunciado acadêmico da Sprint 3 e não integra o corpus nem serve como documentação técnica GoodWe.
 
 ## Ingestão repetível
 
