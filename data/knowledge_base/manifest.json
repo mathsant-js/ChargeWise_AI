@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "documents": [
+    {
+      "path": "condominio_cenario_v2.md",
+      "document": "Conhecimento do Condomínio — cenário simulado v2",
+      "source": "data/conhecimento_condominio_v2.md",
+      "origin": "Arquivo do próprio projeto, reproduzido sem alterar os dados",
+      "version": "v2",
+      "date": "data original não informada; inventariado em 2026-10-23",
+      "type": "regra operacional simulada",
+      "authority": "simulado",
+      "sections": [
+        "Tarifa Padrão",
+        "Quantidade de Carregadores padrão",
+        "Potência média do carregador",
+        "Horário com maior demanda de carregamento",
+        "Política de agendamento",
+        "Conflitos de horário"
+      ]
+    },
+    {
+      "path": "faq_condominio_simulado_v1.md",
+      "document": "FAQ do condomínio simulado",
+      "source": "data/conhecimento_condominio_v2.md",
+      "origin": "Reformulação editorial do conhecimento condominial v2 do projeto",
+      "version": "v1",
+      "date": "2026-10-23",
+      "type": "FAQ derivada de cenário simulado",
+      "authority": "simulado",
+      "sections": [
+        "Quanto custa a energia de recarga no cenário?",
+        "Quando há maior demanda?",
+        "Como funcionam as reservas?",
+        "Quantos carregadores existem e qual a potência média?"
+      ]
+    }
+  ]
+}
