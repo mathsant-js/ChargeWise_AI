@@ -89,3 +89,32 @@ def test_prompt_versions_keep_document_as_untrusted_context():
         assert messages[0]["role"] == "system"
         assert "não confiável" in messages[0]["content"]
         assert "Reservas de até 4 horas" in messages[1]["content"]
+
+
+def test_tariff_retrieval_uses_all_index_candidates_and_cites_only_matching_fact():
+    irrelevant = chunk("Esta FAQ não contém tarifa oficial.", distance=0.1)
+    tariff = RetrievedChunk("A tarifa padrão do cenário é R$ 0,92/kWh.", {
+        **chunk().metadata, "chunk_id": "tariff", "section": "Tarifa Padrão"}, 0.8)
+
+    class FullRetriever(Retriever):
+        def __init__(self):
+            self.collection = type("Collection", (), {"count": lambda self: 11})()
+
+        def retrieve(self, question, k=None):
+            assert k == 11
+            return [irrelevant, tariff]
+
+    def select(messages):
+        assert "A tarifa padrão do cenário" in messages[1]["content"]
+        assert "Esta FAQ não contém" not in messages[1]["content"]
+        return {"evidence": [{"id": "tariff", "quote": "A tarifa padrão do cenário é R$ 0,92/kWh."}]}
+
+    result = RAGService(FullRetriever(), selector=select).answer("Qual é a tarifa do cenário?")
+    assert not result.refused
+    assert "R$ 0,92/kWh. [1]" in result.answer
+    assert RAGService(FullRetriever(), selector=select).answer("Qual é a tarifa oficial vigente?").refused
+
+
+def test_reservation_priority_question_is_in_scope():
+    from src.guardrails.scope_validator import validate_scope
+    assert validate_scope("Como funcionam as reservas e a prioridade em conflitos no cenário?").allowed

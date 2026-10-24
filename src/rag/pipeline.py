@@ -15,7 +15,7 @@ NO_EVIDENCE = "Não encontrei evidência suficiente na base para responder com s
 _LIVE_OR_SPEC = re.compile(r"\b(?:agora|tempo real|neste momento|vaga\s*\d+|pot[eê]ncia nominal|modelo\s+GW-[\w-]+)\b", re.I)
 _INJECTION = re.compile(r"(?:ignore|desconsidere|revele|mostre|imprima|system prompt|prompt de sistema|instru[cç][aã]o ao assistente|<\s*system)\b", re.I)
 _TOPICS = (
-    (re.compile(r"\b(?:tarifa|pre[cç]o|custo|custa)\b", re.I), re.compile(r"tarifa|pre[cç]o|R\$", re.I)),
+    (re.compile(r"\b(?:tarifa|pre[cç]o|custo|custa)\b", re.I), re.compile(r"R\$\s*\d|tarifa\s+padr[aã]o", re.I)),
     (re.compile(r"hor[aá]rio\s+de\s+pico|hor[aá]rio.*(?:maior\s+demanda|carregamento)", re.I),
      re.compile(r"hor[aá]rio\s+de\s+pico|maior\s+demanda|18h|21h", re.I)),
     (re.compile(r"\b(?:reservar|reserva|reservas|agendamento|tempo\s+de\s+reserva)\b", re.I),
@@ -35,7 +35,7 @@ def _focus_chunks(question: str, chunks: list[RetrievedChunk]) -> list[Retrieved
         return chunks
     focused = [chunk for chunk in chunks if any(pattern.search(
         f"{chunk.metadata.get('section', '')} {chunk.text}") for pattern in required)]
-    return focused or chunks
+    return focused
 
 
 @dataclass(frozen=True)
@@ -79,13 +79,21 @@ class RAGService:
         if _LIVE_OR_SPEC.search(question):
             return RAGResponse(NO_EVIDENCE, True, reason="dado_especifico_ausente",
                                prompt_version=self.prompt_version)
-        chunks = [chunk for chunk in self.retriever.retrieve(question)
+        # A busca vetorial pode omitir uma seção curta mesmo neste corpus pequeno.
+        # Examine todos os candidatos e filtre pelo assunto antes da seleção.
+        retrieval_k = self.retriever.collection.count() if isinstance(self.retriever, Retriever) else None
+        retrieved = self.retriever.retrieve(question, k=retrieval_k) if retrieval_k else self.retriever.retrieve(question)
+        chunks = [chunk for chunk in retrieved
                   if chunk.distance <= self.max_distance and all(
                       chunk.metadata.get(key) for key in ("chunk_id", "document", "section", "source"))]
         if not chunks:
             return RAGResponse(NO_EVIDENCE, True, reason="sem_trechos_relevantes",
                                prompt_version=self.prompt_version)
         chunks = _focus_chunks(question, chunks)
+        if not chunks or (re.search(r"\b(?:oficial|real|vigente)\b", question, re.I)
+                          and all(chunk.metadata.get("authority") == "simulado" for chunk in chunks)):
+            return RAGResponse(NO_EVIDENCE, True, reason="sem_evidencia_aplicavel",
+                               prompt_version=self.prompt_version)
         selected = self.selector(build_messages(question, chunks, self.prompt_version))
         candidates = selected.get("evidence", []) if isinstance(selected, dict) else []
         by_id = {chunk.metadata["chunk_id"]: chunk for chunk in chunks}

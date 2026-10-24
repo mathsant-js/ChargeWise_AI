@@ -58,7 +58,7 @@ _DOMAIN_PATTERN = re.compile(
     r"pot[eê]ncia(?:\s+de\s+carga)?|tarifa|custo|custa|custou|gastei|carregando|cobran[cç]a|reais|"
     r"status|estado|online|offline|dispon[ií]vel|indispon[ií]vel|"
     r"pol[ií]tica\s+de\s+agendamento\s+(?:da\s+recarga|do\s+carregador|do\s+condom[ií]nio)|agendamento\s+(?:de|do)\s+carregador|"
-    r"reserv(?:a|ar|as)\s+(?:de|do|um|o)?\s*carregador|conflito\s+de\s+hor[aá]rio|"
+    r"reserv(?:a|ar|as)\s+(?:de|do|um|o)?\s*carregador|reservas?\s+e\s+(?:a\s+)?prioridade|conflito\s+de\s+hor[aá]rio|"
     r"hor[aá]rio\s+de\s+pico\s+(?:da\s+recarga|do\s+carregamento|dos?\s+carregadores?|no\s+condom[ií]nio)|"
     r"prioridade\s+(?:de|na|em)\s+(?:uso|reserva)\s+(?:do\s+carregador|no\s+condom[ií]nio)|"
     r"regras?\s+(?:de\s+recarga\s+)?(?:do\s+)?condom[ií]nio|"
