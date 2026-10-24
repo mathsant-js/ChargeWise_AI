@@ -1,0 +1,16 @@
+{
+  "run_file": "live_qwen25_k1.json",
+  "recorded_after_run": true,
+  "dataset_sha256": "203a8709d314953ee5aaa6fea24af3ca3e0b1d886952498892ae7da5b05b203e",
+  "index_fingerprint": "a2f26ab6542240f04af18c47f88df3b372228ddddd3fee98f09d16d31e015845",
+  "embedding_model": "nomic-embed-text",
+  "generation_model": "qwen2.5:1.5b",
+  "generation_options": {
+    "temperature": 0,
+    "top_p": 0.9,
+    "max_tokens": 500
+  },
+  "top_k": 1,
+  "prompt_version": "v1",
+  "note": "A primeira versão do executor ainda não persistia esses campos; modelo e opções correspondem ao comando executado e à função _model_select da revisão."
+}
