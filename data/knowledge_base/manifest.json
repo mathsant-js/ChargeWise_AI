@@ -10,6 +10,8 @@
       "date": "data original não informada; inventariado em 2026-10-23",
       "type": "regra operacional simulada",
       "authority": "simulado",
+      "license_or_permission": "Uso no projeto acadêmico inferido pela presença no repositório; licença e autorização de redistribuição não documentadas",
+      "limitations": "Cenário fictício; tarifa, quantidade, potência e regras não representam condomínio real nem especificações ou preços GoodWe. Data de criação original desconhecida.",
       "sections": [
         "Tarifa Padrão",
         "Quantidade de Carregadores padrão",
@@ -28,6 +30,8 @@
       "date": "2026-10-23",
       "type": "FAQ derivada de cenário simulado",
       "authority": "simulado",
+      "license_or_permission": "Texto derivado de material do próprio projeto; licença e autorização de redistribuição não documentadas",
+      "limitations": "Paráfrase do cenário fictício v2, sem fonte independente; não é FAQ oficial GoodWe nem valida tarifa, equipamento ou regra real.",
       "sections": [
         "Quanto custa a energia de recarga no cenário?",
         "Quando há maior demanda?",

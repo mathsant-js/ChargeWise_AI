@@ -1,13 +1,19 @@
 # Corpus da Sprint 4
 
-Este diretório contém apenas conteúdo do cenário **simulado** do projeto. A tarifa, o número de carregadores, a potência média e as regras de agendamento não são dados oficiais da GoodWe nem informações de um condomínio real. Não há manual ChargeGrid/EV ChargeOps ou especificação oficial GoodWe disponível no repositório; nenhum foi inventado.
+Este diretório contém apenas conteúdo do cenário **simulado** do projeto. A tarifa, o número de carregadores, a potência média e as regras de agendamento não são dados oficiais da GoodWe nem informações de um condomínio real. A revisão do workspace em 23/10/2026 não encontrou fonte adicional utilizável; o corpus não foi ampliado. Não há manual ChargeGrid/EV ChargeOps ou especificação oficial GoodWe disponível no repositório; nenhum foi inventado.
 
-| Arquivo | Origem | Versão/data | Tipo | Seções |
-|---|---|---|---|---|
-| `condominio_cenario_v2.md` | Cópia de `data/conhecimento_condominio_v2.md` | v2; data original desconhecida, inventariado em 2026-10-23 | Regras simuladas | Tarifa, quantidade, potência média, pico, agendamento, conflitos |
-| `faq_condominio_simulado_v1.md` | FAQ derivada do mesmo arquivo v2 | v1; 2026-10-23 | FAQ simulada | Tarifa, pico, reservas, quantidade/potência |
+| Arquivo | Origem | Versão/data | Autoridade | Licença/permissão conhecida | Limitações |
+|---|---|---|---|---|---|
+| `condominio_cenario_v2.md` | Cópia de `data/conhecimento_condominio_v2.md` | v2; data original desconhecida; inventariado em 2026-10-23 | Simulado | Uso acadêmico inferido pela presença no repositório; licença e redistribuição não documentadas | Tarifa, equipamentos, horário e regras são fictícios; não representam GoodWe ou condomínio real. |
+| `faq_condominio_simulado_v1.md` | Reformulação editorial do mesmo arquivo v2 | v1; 2026-10-23 | Simulado | Derivado de material do projeto; licença e redistribuição não documentadas | Não é FAQ oficial nem fonte independente; repete o cenário fictício. |
 
-O arquivo `manifest.json` é a fonte de metadados para a ingestão: caminho, origem, versão, data, tipo, autoridade e seções. Não há licença explícita registrada para os materiais do projeto. Antes de acrescentar PDFs ou manuais externos, verificar origem legítima e direito de uso, registrar a licença/permissão e os metadados no manifesto. O PDF `docs/EV_Challenge_2026_GoodWe_Sprint_03.pdf` foi usado somente para validar a extração por página; é um enunciado acadêmico da Sprint 3 e não integra o corpus nem serve como documentação técnica GoodWe.
+O arquivo `manifest.json` é a fonte de metadados para a ingestão: caminho, origem, versão, data, tipo, autoridade, licença/permissão conhecida, limitações e seções. Os campos de licença descrevem apenas o que é conhecido; a presença no repositório não comprova direito de redistribuição. O PDF `docs/EV_Challenge_2026_GoodWe_Sprint_03.pdf` é um enunciado acadêmico da Sprint 3, não documentação técnica GoodWe. Relatórios do projeto em `docs/` são análises secundárias e não devem ser usados como fonte primária de especificações, regras ou tarifas.
+
+## Lacunas e entrada de novas fontes
+
+Faltam: (1) manuais GoodWe do produto pertinente, com modelo, revisão e URL ou arquivo de origem; (2) regulamento aprovado de um condomínio identificável, com vigência e permissão de uso; (3) FAQ de carregamento publicada por autoridade identificável, com versão/data e licença ou permissão; (4) tabela tarifária aplicável, com emissor, localidade, período de vigência, unidade e permissão. Não há anexos desta conversa disponíveis para ingestão. Até obter esses materiais, os dados simulados permanecem os únicos indexados.
+
+Para incorporar uma fonte, guardar uma cópia verificável neste diretório, registrar no `manifest.json` os campos obrigatórios de cada entrada (`path`, `document`, `source`, `origin`, `version`, `date`, `type`, `authority`, `license_or_permission`, `limitations`, `sections`) e conferir texto, seções e páginas com o comando de ingestão abaixo. Usar `desconhecido` quando versão ou data não forem informadas e descrever explicitamente essa limitação. Registrar URL e data de acesso em `origin` quando a origem for online. Manter o material simulado com `authority: simulado`; marcar documentos oficiais apenas quando a origem e a autoridade estiverem verificadas. Só depois de validar permissão e conteúdo, adicionar o documento ao manifesto e reconstruir o índice com `--reindex`.
 
 ## Ingestão repetível
 
