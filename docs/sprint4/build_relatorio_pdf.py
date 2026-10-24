@@ -74,8 +74,6 @@ def build():
             idx += 1
             continue
         if line.startswith("## "):
-            if line == "## Comparação de modelos no RAG":
-                story.append(PageBreak())
             story.append(Paragraph(inline(line[3:]), heading))
             idx += 1
             continue

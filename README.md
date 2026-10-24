@@ -141,6 +141,10 @@ O comparativo executado usou `gpt-oss:120b` e `gpt-oss:20b`; `qwen3:8b` não est
 
 # 🧠 Técnicas de Prompt Engineering Utilizadas
 
+### Resultado após ampliação do corpus
+
+A reavaliação de 23/10/2026 usa 15 perguntas e o corpus inventariado de dois Markdown (cenário v2 simulado e FAQ derivada), com 11 chunks no Chroma. No mesmo índice, prompt v3 e `k=3`, `qwen2.5:1.5b` teve relevância 1,000 em dez perguntas respondíveis; `llama3.2:latest` teve 0,750. Ambos tiveram recuperação literal @3 de 0,611 em nove casos e 5/5 recusas corretas por guardrails. A fixture isolada de injeção foi respondida pelo Qwen sem seguir a instrução; o Llama recusou indevidamente. A FAQ não é evidência independente ou especificação GoodWe. Consulte [reavaliação](evals/reevaluation_2026-10-23.md), [resultados por caso](evals/manual/reevaluation_2026-10-23.json) e [relatório RAG](evals/relatorio_rag.md).
+
 ## System Prompt
 
 O comportamento atual do assistente é controlado por
@@ -284,7 +288,9 @@ O fluxo atual é: entrada do usuário → guardrail de escopo → `LCELChainWrap
 
 <br>
 
-# 🚀 Como Executar
+# 🚀 Como Executar pela Interface Web
+
+Execute os comandos abaixo na raiz do repositório com Python 3.10 ou superior.
 
 ## 1. Clonar o Repositório
 
@@ -296,49 +302,50 @@ cd ChargeWise_AI
 
 ## 2. Criar Ambiente Virtual
 
-Linux/Mac:
+Linux/macOS:
 
 ```bash
-python -m venv .venv
-
+python3 -m venv .venv
 source .venv/bin/activate
 ```
 
 Windows:
 
 ```bash
-python -m venv .venv
-
+py -m venv .venv
 .venv\Scripts\activate
 ```
 
 ## 3. Instalar Dependências
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
-<br>
+Use o mesmo ambiente virtual para instalar as dependências e executar os próximos comandos. Isso inclui o `chromadb`, necessário para criar o índice.
 
-# ⚙️ Variáveis de Ambiente
+## 4. Configurar o Ollama
 
-Crie um arquivo `.env` na raiz do projeto:
-
-```env
-OLLAMA_API_KEY=sua_chave_aqui
-OLLAMA_HOST=https://ollama.com
-OLLAMA_MODEL=gpt-oss:120b
-```
-
-<br>
-
-# ▶️ Executando o Projeto
+Instale e inicie o Ollama. Copie a configuração de exemplo para `.env` na raiz do projeto:
 
 ```bash
-python3 -m src.main
+cp .env.example .env
+ollama pull nomic-embed-text
+ollama pull qwen2.5:1.5b
 ```
 
-Sem credencial, esse comando inicia em modo mock. Para o resultado do modelo configurado, informe uma `OLLAMA_API_KEY` válida e mantenha `USE_MOCK_MODEL=false`.
+No Windows, use `copy .env.example .env`. O exemplo configura o Ollama local em `http://localhost:11434`: `OLLAMA_BASE_URL` é usado para embeddings e `OLLAMA_HOST` para gerar respostas. Se usar um servidor remoto, ajuste ambos no `.env` e informe `OLLAMA_API_KEY` quando necessário.
+
+## 5. Criar o índice e abrir a interface
+
+```bash
+python -m src.rag.vector_store index
+python -m streamlit run app/app.py
+```
+
+Abra no navegador a URL local exibida pelo Streamlit. O Ollama precisa estar acessível durante a indexação e o uso da interface. Se o corpus ou o modelo de embeddings mudar, recrie o índice com `python -m src.rag.vector_store index --reindex`.
+
+Para usar o chatbot legado no terminal, execute `python -m src.main`. Sem credencial no host padrão, esse fluxo usa o modelo mock determinístico; a interface web com RAG usa o índice e o Ollama reais. Consulte [o guia da interface](app/README.md) para mais opções de configuração e verificação.
 
 <br>
 

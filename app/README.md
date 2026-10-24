@@ -66,3 +66,7 @@ Execute em sequência se for comparar latência em uma única máquina. O
 relatório `docs/relatorio_modelos.md` distingue este benchmark RAG do
 comparativo conversacional da Sprint 3. As notas 0–1 exigem revisão das
 respostas brutas conforme a rubrica em `evals/relatorio_rag.md`.
+
+## Resultado verificado com o corpus atual
+
+A rodada de 23/10/2026 contém 15 perguntas, dois arquivos Markdown no manifesto e 11 chunks no índice. Com prompt v3 e `k=3`, Qwen atingiu relevância 1,000 em dez casos respondíveis e Llama 0,750; recuperação literal @3 foi 0,611 em nove casos para ambos. Os cinco casos de recusa foram bloqueados por guardrails antes da geração. Veja `evals/reevaluation_2026-10-23.md` e `evals/manual/reevaluation_2026-10-23.json`. A FAQ é derivada do cenário simulado; o serviço não dispõe de especificações oficiais GoodWe. Após mudar corpus ou embeddings, execute `python3 -m src.rag.vector_store index --reindex` antes de abrir a interface.

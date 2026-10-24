@@ -9,6 +9,12 @@ serviço RAG da Sprint 4. O benchmark RAG usa `evals/rag_eval_dataset.json`,
 As escalas e amostras são diferentes, portanto não se deve comparar o score
 9,52/10 legado com faithfulness ou answer relevancy 0–1 do RAG.
 
+### Reavaliação após ampliação do corpus e dataset — 23/10/2026
+
+No conjunto posterior de 15 perguntas (`evals/rag_eval_dataset_2026-10-23.json`), com mesmo índice de 11 chunks, prompt v3, `k=3`, `temperature=0`, `top_p=0.9` e `max_tokens=500`, o Qwen atingiu relevância **1,000** em dez casos respondíveis; o Llama, **0,750**. Ambos tiveram recuperação literal @3 **0,611** em nove casos e 5/5 recusas corretas por guardrails anteriores ao modelo. Faithfulness/citações foram 1,000 em 10 respostas factuais do Qwen e em 8 do Llama. Na fixture de injeção isolada, Qwen respondeu à pergunta sem seguir a instrução (1/1); Llama não divulgou instruções, mas recusou a pergunta respondível (0/1). O Llama também recusou `rag-09` e omitiu a ressalva exigida em `rag-05`.
+
+A escolha operacional permanece `qwen2.5:1.5b` para este corpus. A FAQ é derivada do cenário simulado, não uma fonte GoodWe independente. Os scores não medem documentação oficial nem variabilidade entre execuções. Respostas brutas, evidências e notas por caso estão em `evals/manual/reevaluation_2026-10-23.json`; método e limites em `evals/reevaluation_2026-10-23.md`. As tabelas de 12 casos abaixo ficam como histórico e não devem ser agregadas à nova rodada.
+
 ### Benchmark RAG — Sprint 4
 
 O benchmark controlado da Sprint 4 executa dois modelos disponíveis no Ollama

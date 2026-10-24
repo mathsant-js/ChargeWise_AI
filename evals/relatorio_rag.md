@@ -1,4 +1,25 @@
-# Avaliação RAG — fases 3 a 5
+# Avaliação RAG — fases 3 a 5 e reavaliação do corpus ampliado
+
+## Corpus ampliado: reavaliação de 23/10/2026
+
+A rodada posterior usa `rag_eval_dataset_2026-10-23.json` (15 casos; SHA-256 `e682e6a74843f390201b277fe287e3db51fd79882a751b8be9c42a2b9ed90d7b`) e `manual/reevaluation_2026-10-23.json`. O manifesto contém dois Markdown: cenário condominial simulado v2 e FAQ editorial derivada, sem documentação oficial GoodWe independente. O índice permanece com 11 chunks e fingerprint `a2f26ab6542240f04af18c47f88df3b372228ddddd3fee98f09d16d31e015845`; o corpus foi ampliado em perguntas e na FAQ, não em fontes oficiais.
+
+Ambos os modelos foram executados uma vez no Ollama local com `nomic-embed-text`, prompt v3, `k=3`, `temperature=0`, `top_p=0.9` e `max_tokens=500`. A rubrica manual assistida 0/0,5/1 é a mesma descrita abaixo. Recuperação exige correspondência literal da fonte, seção e trecho esperados nos três primeiros chunks. A fixture de injeção foi inserida só no contexto de `rag-12`, sem alterar o Chroma persistente.
+
+| Métrica, denominador | `qwen2.5:1.5b` | `llama3.2:latest` |
+|---|---:|---:|
+| Recuperação literal @3, 9 casos | 0,611 | 0,611 |
+| Faithfulness, respostas factuais | 1,000 (10) | 1,000 (8) |
+| Answer relevancy, 10 respondíveis | 1,000 | 0,750 |
+| Citações, respostas factuais | 1,000 (10) | 1,000 (8) |
+| Recusas corretas | 5/5 | 5/5 |
+| Injeção: respondeu sem seguir a ordem | 1/1 | 0/1 |
+
+**Decisão e trade-off:** `qwen2.5:1.5b` segue como padrão nesta amostra: respondeu aos dez casos respondíveis e ao caso de injeção. `llama3.2:latest` recusou indevidamente `rag-09` e `rag-12`; em `rag-05` deu dados corretos, mas não esclareceu que 7 kW não é potência nominal GoodWe. Sua fidelidade 1,000 se refere somente às oito respostas factuais emitidas. O filtro de assunto e as citações literais favorecem rastreabilidade, mas limitam a naturalidade da resposta e não corrigem a recuperação literal.
+
+**Problema e solução:** `rag-01`, `rag-03` e `rag-08` tiveram recall literal zero porque a FAQ derivada apareceu no top 3 no lugar da seção original esperada. A FAQ sustenta os mesmos fatos, mas a métrica estrita não a aceita como substituta; `rag-05` obteve 0,5. O relatório registra a diferença entre suporte semântico e correspondência literal em vez de declarar o recall resolvido. Os cinco bloqueios corretos ocorreram antes da geração, portanto não são evidência de segurança isolada dos modelos. Uma execução por modelo, corpus pequeno e avaliação assistida não permitem generalização. Detalhes por caso e respostas brutas: `manual/reevaluation_2026-10-23.json`; protocolo e análise: `reevaluation_2026-10-23.md`.
+
+## Histórico das 12 perguntas
 
 ## Ambiente e método
 
